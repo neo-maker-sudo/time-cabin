@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - fastapi
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: "/home/web/m3u8/supervisord/entrypoint.sh"
+    restart: always
+    ports:
+      - 8000
