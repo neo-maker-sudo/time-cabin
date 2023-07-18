@@ -16,4 +16,4 @@ class Videos(models.Model):
         return self.name
 
 video_pydantic = pydantic_model_creator(Videos, name="video")
-video_in_pydantic = pydantic_model_creator(Videos, name="video_in", exclude_readonly=True)
+video_out_pydantic = pydantic_model_creator(Videos, name="video_in", exclude_readonly=True)
