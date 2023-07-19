@@ -3,11 +3,11 @@ from app.config import setting
 
 aerich_migrate_models: list = [
     "aerich.models",
-    *setting.db_models,
+    *setting.DATABASE_MIGRATION_MODELS,
 ]
 
 TORTOISE_ORM = {
-    "connections": {"default": setting.db_url},
+    "connections": {"default": setting.DATABASE_URL},
     "apps": {
         "models": {
             "models": aerich_migrate_models,

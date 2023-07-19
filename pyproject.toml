@@ -11,6 +11,9 @@ fastapi = {extras = ["all"], version = "^0.95.0"}
 gunicorn = "^20.1.0"
 tortoise-orm = {extras = ["asyncpg"], version = "^0.19.3"}
 aerich = "^0.7.1"
+python-ffmpeg-video-streaming = "^0.1.15"
+boto3 = "^1.26.129"
+tzdata = "^2023.3"
 
 
 [tool.poetry.group.dev.dependencies]
