@@ -1,60 +1,32 @@
-from fastapi import HTTPException, status
-
-
-class HTTPBase(Exception):
-    status_code = None
-    detail = None
-    headers = None
-
-    @classmethod
-    def raise_http_exception(cls):
-        raise HTTPException(
-            status_code=cls.status_code,
-            detail=cls.detail,
-            headers=cls.headers,
-        )
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        for key, value in kwargs.items():
-            type.__setattr__(cls, key, value)
+from fastapi import status
+from .base import HTTPBase
 
 
 class InstanceDoesNotExistException(
     HTTPBase,
     status_code=status.HTTP_404_NOT_FOUND,
     detail="instance not found",
-):
-    ...
+): pass
 
 
 class AWSClientException(
     HTTPBase,
     status_code=status.HTTP_406_NOT_ACCEPTABLE,
     detail="upload image error due to network, service, permission etc...",
-):
-    ...
+): pass
 
 
 class AWSLimitExceededException(
     HTTPBase,
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="API rate limit exceeded, backing off and retrying",
-):
-    ...
+): pass
 
 
 class AWSParamValidationException(
     HTTPBase,
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="invalid or not found cloud argument",
-):
-    ...
-
-
-class VideoFileExtensionException(
-    HTTPBase,
-    status_code=status.HTTP_400_BAD_REQUEST,
-    detail="invalid file extension"
 ): pass
 
 

@@ -3,6 +3,8 @@ import boto3
 from pathlib import Path
 from app.enums.video import VideoDestinationFolderEnum
 
+BASE_DIR = Path(__file__).parent.parent.parent
+
 DATABASE_URL: str = os.getenv("DATABASE_URL")
 DATABASE_MIGRATION_MODELS: list = [
     "app.sql.models.video",
@@ -35,7 +37,9 @@ S3_TRANSFER_CONFIG = boto3.s3.transfer.TransferConfig(
     multipart_chunksize=1024 * 50,  # 50 MB
 )
 
-M3U8_DESTINATION_FOLDER = Path(__file__).parent.parent.parent / VideoDestinationFolderEnum.M3U8.value
-MP4_DESTINATION_FOLDER = Path(__file__).parent.parent.parent / VideoDestinationFolderEnum.MP4.value
+M3U8_DESTINATION_FOLDER = BASE_DIR / VideoDestinationFolderEnum.M3U8.value
+MP4_DESTINATION_FOLDER = BASE_DIR / VideoDestinationFolderEnum.MP4.value
 
+PASSWORD_REGEX = r"((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,12})"
 
+DATE_TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"

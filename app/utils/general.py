@@ -7,7 +7,7 @@ from pathlib import Path, PosixPath
 from tempfile import NamedTemporaryFile, SpooledTemporaryFile, TemporaryDirectory
 from urllib.parse import urlencode, urlparse, urlunparse
 from fastapi import UploadFile
-from app.exceptions import ConvertDatetimeFormatException
+from app.exceptions.general import ConvertDatetimeFormatException
 from app.enums.general import TimeZoneEnum
 
 

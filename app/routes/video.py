@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, status, Depends, Form
 from app.config import setting
 from app.dependencies import verify_video_extension
-from app.exceptions import InstanceDoesNotExistException
+from app.exceptions.general import InstanceDoesNotExistException
 from app.enums.video import VideoTypeEnum
 from app.sql.schemas.videos import (
     VideoCreateSchemaIn,
