@@ -6,6 +6,7 @@ from app.enums.video import VideoDestinationFolderEnum
 DATABASE_URL: str = os.getenv("DATABASE_URL")
 DATABASE_MIGRATION_MODELS: list = [
     "app.sql.models.video",
+    "app.sql.models.users",
 ]
 
 
