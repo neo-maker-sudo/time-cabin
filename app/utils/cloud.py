@@ -5,7 +5,7 @@ from botocore.exceptions import (
     ParamValidationError,
 )
 from app.config import setting
-from app.exceptions import (
+from app.exceptions.general import (
     AWSClientException,
     AWSParamValidationException,
     AWSLimitExceededException,

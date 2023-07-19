@@ -14,6 +14,7 @@ aerich = "^0.7.1"
 python-ffmpeg-video-streaming = "^0.1.15"
 boto3 = "^1.26.129"
 tzdata = "^2023.3"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 
 [tool.poetry.group.dev.dependencies]

@@ -1,5 +1,5 @@
 from tortoise.exceptions import DoesNotExist
-from app.exceptions import InstanceDoesNotExistException
+from app.exceptions.general import InstanceDoesNotExistException
 from app.sql.models.video import video_pydantic, Videos
 
 
