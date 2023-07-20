@@ -17,7 +17,7 @@ from app.sql.schemas.users import (
     UserUpdateAvatarSchemaOut,
     UserUpdateSchemaOut,
 )
-from app.utils.security import hash_password
+from app.utils.security import hash_password, verify_access_token
 
 
 router = APIRouter(
@@ -26,8 +26,8 @@ router = APIRouter(
 )
 
 
-@router.get("/{user_id}/user", response_model=UserProfileSchemaOut)
-async def retrieve_user_view(user_id: int):
+@router.get("/user", response_model=UserProfileSchemaOut)
+async def retrieve_user_view(user_id: int = Depends(verify_access_token)):
     try:
         user = await retrieve_user(user_id=user_id)
 
@@ -49,9 +49,9 @@ async def create_user_view(schema: UserCreateSchemaIn):
     return user
 
 
-@router.patch("/update/{user_id}/user/avatar", response_model=UserUpdateAvatarSchemaOut)
+@router.patch("/update/user/avatar", response_model=UserUpdateAvatarSchemaOut)
 async def update_user_avatar_view(
-    user_id: int,
+    user_id: int = Depends(verify_access_token),
     upload_file: UploadFile = Depends(verify_avatar_entension),
 ):
     try:
@@ -65,10 +65,10 @@ async def update_user_avatar_view(
     return user
 
 
-@router.patch("/update/{user_id}/user", response_model=UserUpdateSchemaOut)
+@router.patch("/update/user", response_model=UserUpdateSchemaOut)
 async def update_user_view(
-    user_id: int,
     schema: UserUpdateSchemaIn,
+    user_id: int = Depends(verify_access_token),
 ):
     try:
         user = await update_user(user_id, schema.dict())
@@ -79,8 +79,10 @@ async def update_user_view(
     return user
 
 
-@router.delete("/delete/{user_id}/user", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user_view(user_id: int):
+@router.delete("/delete/user", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user_view(
+    user_id: int = Depends(verify_access_token)
+):
     try:
         await delete_user(user_id=user_id)
 
