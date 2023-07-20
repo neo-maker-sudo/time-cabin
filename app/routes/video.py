@@ -16,17 +16,23 @@ from app.sql.crud.video import (
     update_video,
     delete_video,
 )
-from app.utils.general import download_upload_file, save_tmp_folder
 from app.utils.cloud import upload_to_s3
+from app.utils.general import download_upload_file, save_tmp_folder
+from app.utils.security import verify_access_token
 from app.utils.video import mp4_to_m3u8
+
 
 router = APIRouter(
     prefix="/api",
     tags=["videos"],
-) 
+)
+
 
 @router.get("/{video_id}/video")
-async def retrieve_single_mp4_video_view(video_id: int):
+async def retrieve_single_mp4_video_view(
+    video_id: int,
+    user_id: int = Depends(verify_access_token),
+):
     try:
         video = await retrieve_video(video_id=video_id)
 
@@ -37,7 +43,7 @@ async def retrieve_single_mp4_video_view(video_id: int):
 
 
 @router.get("/videos")
-async def retrieve_all_mp4_video_view():
+async def retrieve_all_mp4_video_view(user_id: int = Depends(verify_access_token),):
     return await retrieve_videos()
 
 
@@ -45,7 +51,8 @@ async def retrieve_all_mp4_video_view():
 async def create_mp4_video_view(
     upload_file: UploadFile = Depends(verify_video_extension),
     name: str = Form(..., max_length=64),
-    information: str = Form("")
+    information: str = Form(""),
+    user_id: int = Depends(verify_access_token),
 ):
     # download upload_file to local
     # https://stackoverflow.com/questions/63580229/how-to-save-uploadfile-in-fastapi
@@ -78,13 +85,20 @@ async def create_mp4_video_view(
 
 
 @router.patch("/update/{video_id}/video", response_model=VideoUpdateSchemaOut)
-async def update_mp4_video_view(video_id: int, schema: VideoUpdateSchemaIn):
+async def update_mp4_video_view(
+    video_id: int,
+    schema: VideoUpdateSchemaIn,
+    user_id: int = Depends(verify_access_token),
+):
     video = await update_video(video_id, update_object=schema.dict())
     return video
 
 
 @router.delete("/delete/{video_id}/video", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_mp4_video_view(video_id: int):
+async def delete_mp4_video_view(
+    video_id: int,
+    user_id: int = Depends(verify_access_token),
+):
     try:
         await delete_video(video_id=video_id)
 

@@ -15,6 +15,7 @@ python-ffmpeg-video-streaming = "^0.1.15"
 boto3 = "^1.26.129"
 tzdata = "^2023.3"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 
 
 [tool.poetry.group.dev.dependencies]
