@@ -2,6 +2,14 @@ from fastapi import status
 from .base import HTTPBase
 
 
+class JWTUnauthorizeException(
+    HTTPBase,
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="invalid or expired token",
+    headers={"WWW-Authenticate": "Bearer"},
+): pass
+
+
 class InstanceDoesNotExistException(
     HTTPBase,
     status_code=status.HTTP_404_NOT_FOUND,

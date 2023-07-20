@@ -43,3 +43,7 @@ MP4_DESTINATION_FOLDER = BASE_DIR / VideoDestinationFolderEnum.MP4.value
 PASSWORD_REGEX = r"((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,12})"
 
 DATE_TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
+
+JWT_ALGORITHM: str = "HS256"
+JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
+JWT_EXPIRE_DAYS: int = 2
