@@ -1,11 +1,23 @@
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from app.config import setting
 from app.routes import video, users, auth
 from app.utils.general import create_videos_folder
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=setting.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=setting.CORS_METHODS,
+    allow_headers=["*"],
+)
+
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=setting.TRUSTS_HOSTS)
 
 app.include_router(video.router)
 app.include_router(users.router)
