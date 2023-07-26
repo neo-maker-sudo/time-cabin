@@ -16,6 +16,7 @@ boto3 = "^1.26.129"
 tzdata = "^2023.3"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+fastapi-pagination = "^0.12.6"
 
 
 [tool.poetry.group.dev.dependencies]
