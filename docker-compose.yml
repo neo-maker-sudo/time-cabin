@@ -14,6 +14,17 @@ services:
       context: .
       dockerfile: Dockerfile
     entrypoint: "/home/web/m3u8/supervisord/entrypoint.sh"
-    restart: always
+    restart: always 
+    environment:
+      - SETTING_MODULE=app.config.staging
+      - HOST_SCHEME=${HOST_SCHEME}
+      - HOST_NAME=${HOST_NAME}
+      - DATABASE_URL=${DATABASE_URL}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION_NAME=${S3_REGION_NAME}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+
     ports:
       - 8000

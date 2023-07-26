@@ -1,10 +1,10 @@
 import io
 import uuid
 from pathlib import Path
-from fastapi import UploadFile
 from typing import Any
 from tortoise import fields, ConfigurationError
 from tortoise.models import Model
+from starlette.datastructures import UploadFile
 from app.config import setting
 
 
@@ -28,10 +28,11 @@ class FileField(fields.TextField):
         return isinstance(upload_file.file._file, io.TextIOBase)
 
     def to_db_value(self, value: UploadFile,  instance: type[Model] | Model) -> Any:
-        if value is None:
-            return super().to_db_value(value, instance)
+        if isinstance(value, UploadFile):
+            is_binary = self.is_binary_stream(value)
 
-        is_binary = self.is_binary_stream(value)
+        elif value is None or value.startswith(setting.STATIC_URL["public"]):
+            return super().to_db_value(value, instance)
 
         if Path(setting.BASE_DIR / self.upload_to / value.filename).is_file():
             locate_filename = f"{str(uuid.uuid4())}_{value.filename}"
@@ -46,4 +47,7 @@ class FileField(fields.TextField):
         with open(path, mode=mode) as file:
             file.write(value.file.read())
 
-        return path
+        return "{}{}".format(
+            setting.STATIC_URL["avatar"],
+            locate_filename
+        )

@@ -3,7 +3,10 @@ import boto3
 from pathlib import Path
 from app.enums.video import VideoDestinationFolderEnum
 
+
 BASE_DIR = Path(__file__).parent.parent.parent
+HOST_SCHEME: str = os.getenv("HOST_SCHEME")
+HOST_NAME: str = os.getenv("HOST_NAME")
 
 DATABASE_URL: str = os.getenv("DATABASE_URL")
 DATABASE_MIGRATION_MODELS: list = [
@@ -47,3 +50,11 @@ DATE_TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 JWT_ALGORITHM: str = "HS256"
 JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
 JWT_EXPIRE_DAYS: int = 2
+
+AVATAR_UPLOAD_TO: str = "static/avatar/"
+PUBLIC_UPLOAD_TO: str = "static/public/"
+
+STATIC_URL = {
+    "avatar": f"{HOST_SCHEME}://{HOST_NAME}/{AVATAR_UPLOAD_TO}",
+    "public": f"{HOST_SCHEME}://{HOST_NAME}/{PUBLIC_UPLOAD_TO}",
+}
