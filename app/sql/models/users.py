@@ -16,6 +16,15 @@ class Users(models.Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     modified_at = fields.DatetimeField(auto_now=True)
 
+    async def _pre_save(self, using_db, update_fields):
+        if self.avatar is None:
+            self.avatar = "{}{}".format(
+                setting.STATIC_URL["public"],
+                "default.png"
+            )
+
+        return await super()._pre_save(using_db, update_fields)
+
     def __str__(self):
         return self.email
 

@@ -52,7 +52,9 @@ JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
 JWT_EXPIRE_DAYS: int = 2
 
 AVATAR_UPLOAD_TO: str = "static/avatar/"
+PUBLIC_UPLOAD_TO: str = "static/public/"
 
 STATIC_URL = {
-    "avatar": f"{HOST_SCHEME}://{HOST_NAME}/{AVATAR_UPLOAD_TO}"
+    "avatar": f"{HOST_SCHEME}://{HOST_NAME}/{AVATAR_UPLOAD_TO}",
+    "public": f"{HOST_SCHEME}://{HOST_NAME}/{PUBLIC_UPLOAD_TO}",
 }
