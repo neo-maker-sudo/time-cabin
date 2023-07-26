@@ -1,5 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, Depends, status, Query
+from fastapi_pagination import add_pagination
 from app.dependencies import verify_avatar_entension
 from app.exceptions.general import InstanceDoesNotExistException, InstanceFieldException
 from app.exceptions.users import UserUniqueConstraintException
@@ -27,6 +28,7 @@ router = APIRouter(
     prefix="/api",
     tags=["users"]
 )
+add_pagination(router)
 
 
 @router.get("/user", response_model=UserProfileSchemaOut)
@@ -97,12 +99,16 @@ async def delete_user_view(
 
 @router.get("/profile/videos", response_model=UserVideosSchemaOut)
 async def retrieve_user_videos_view(
+    page: int = Query(ge=1),
+    size: int = Query(ge=1),
     o: Annotated[list[str], Query()] = [],
     user_id: int = Depends(verify_access_token)
 ):
     try:
         user_videos = await retrieve_user_videos(
-            user_id, 
+            user_id,
+            page=page,
+            size=size,
             order_field=(["created_at"] if not o else o ),
         )
 

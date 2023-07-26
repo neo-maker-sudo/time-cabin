@@ -1,6 +1,8 @@
 from asyncpg.exceptions import UniqueViolationError
 from tortoise.exceptions import IntegrityError, DoesNotExist, FieldError
 from tortoise.query_utils import Prefetch
+from fastapi_pagination.ext.tortoise import paginate
+from app.utils.pagination import VideoParams
 from app.exceptions.general import InstanceDoesNotExistException, InstanceFieldException
 from app.exceptions.users import UserUniqueConstraintException
 from app.sql.models.users import Users, users_pydantic
@@ -17,8 +19,10 @@ async def retrieve_user(user_id):
     return user
 
 
-async def retrieve_user_videos(user_id: int, order_field: list):
+async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_field: list):
     try:
+        params = VideoParams(page=page, size=size)
+
         if not (
             qs := await Users.get(id=user_id)
             .prefetch_related(
@@ -33,6 +37,8 @@ async def retrieve_user_videos(user_id: int, order_field: list):
     except FieldError:
         raise InstanceFieldException
 
+    user_videos_pagination = await paginate(qs.videos, params=params)
+    qs.videos.related_objects = user_videos_pagination
     return qs
 
 async def create_user(create_object: dict):

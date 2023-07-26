@@ -54,8 +54,16 @@ class UserUpdateSchemaOut(users_pydantic):
         }
 
 
+class UserVideosPaginationSchema(BaseModel):
+    items: list[video_pydantic] = []
+    total: int | None = None
+    pages: int | None = None
+    page: int | None = None
+    size: int | None = None
+
+
 class UserVideosSchemaOut(users_videos_pydantic):
-    videos: list[video_pydantic] = []
+    videos: UserVideosPaginationSchema
 
     class Config:
         json_encoders = {
