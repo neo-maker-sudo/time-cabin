@@ -46,4 +46,7 @@ class FileField(fields.TextField):
         with open(path, mode=mode) as file:
             file.write(value.file.read())
 
-        return path
+        return "{}{}".format(
+            setting.STATIC_URL["avatar"],
+            locate_filename
+        )
