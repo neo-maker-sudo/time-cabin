@@ -12,6 +12,8 @@ class Videos(models.Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     modified_at = fields.DatetimeField(auto_now=True)
 
+    user = fields.ForeignKeyField("models.Users", related_name="videos", null=True)
+
     def __str__(self):
         return self.name
 

@@ -1,6 +1,7 @@
 from tortoise import fields, models
 from tortoise.contrib.pydantic import pydantic_model_creator
 from app.config import setting
+from .video import Videos
 from .general import FileField
 
 
@@ -15,6 +16,8 @@ class Users(models.Model):
     password = fields.CharField(max_length=255, null=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     modified_at = fields.DatetimeField(auto_now=True)
+
+    videos: fields.ReverseRelation["Videos"]
 
     async def _pre_save(self, using_db, update_fields):
         if self.avatar is None:
