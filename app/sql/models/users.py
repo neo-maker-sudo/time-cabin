@@ -33,4 +33,18 @@ class Users(models.Model):
 
 
 users_pydantic = pydantic_model_creator(Users, name="users", exclude=("password",))
+users_videos_pydantic = pydantic_model_creator(
+    Users,
+    name="userVideos",
+    exclude=(
+        "password",
+        "created_at",
+        "modified_at",
+        "start_time",
+        "end_time",
+        "active",
+        "avatar",
+        "nickname",
+    )
+)
 users_out_pydantic = pydantic_model_creator(Users, name="users_in", exclude_readonly=True)
