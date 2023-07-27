@@ -109,7 +109,7 @@ async def retrieve_user_videos_view(
             user_id,
             page=page,
             size=size,
-            order_field=(["created_at"] if not o else o ),
+            order_field=(["-created_at"] if not o else o ),
         )
 
     except InstanceDoesNotExistException as exc:

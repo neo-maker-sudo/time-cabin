@@ -26,7 +26,7 @@ async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_fie
         if not (
             qs := await Users.get(id=user_id)
             .prefetch_related(
-                Prefetch("videos", queryset=Videos.filter().order_by(*order_field))
+                Prefetch("videos", queryset=Videos.filter())
             )
         ):
             raise DoesNotExist
@@ -37,7 +37,7 @@ async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_fie
     except FieldError:
         raise InstanceFieldException
 
-    user_videos_pagination = await paginate(qs.videos, params=params)
+    user_videos_pagination = await paginate(qs.videos.order_by(*order_field), params=params)
     qs.videos.related_objects = user_videos_pagination
     return qs
 
