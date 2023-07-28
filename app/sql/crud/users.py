@@ -65,6 +65,9 @@ async def update_user_avatar(user_id: int, update_object: dict):
     except DoesNotExist:
         raise InstanceDoesNotExistException
 
+    except Exception as e:
+        raise e
+
     return await users_pydantic.from_queryset_single(Users.get(id=user_id))
 
 
@@ -74,6 +77,9 @@ async def update_user(user_id: int, update_object: dict):
 
     except DoesNotExist:
         raise InstanceDoesNotExistException
+
+    except Exception as e:
+        raise e
 
     return await users_pydantic.from_queryset_single(Users.get(id=user_id))
 
