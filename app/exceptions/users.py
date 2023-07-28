@@ -5,7 +5,7 @@ from .base import HTTPBase
 class AvatarFileExtensionException(
     HTTPBase,
     status_code=status.HTTP_400_BAD_REQUEST,
-    detail="invalid file extension"
+    detail="無效檔案格式"
 ): pass
 
 
