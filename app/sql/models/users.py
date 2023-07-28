@@ -31,13 +31,41 @@ class Users(models.Model):
     def __str__(self):
         return self.email
 
+    class PydanticMeta:
+        exclude = ["password"]
 
-users_pydantic = pydantic_model_creator(Users, name="users", exclude=("password",))
+
+users_pydantic = pydantic_model_creator(Users, name="users")
+user_update_pydantic = pydantic_model_creator(
+    Users,
+    name="userUpdate",
+    exclude=(
+        "created_at",
+        "modified_at",
+        "start_time",
+        "end_time",
+        "active",
+        "avatar",
+        "email",
+    )
+)
+user_avatar_pydantic = pydantic_model_creator(
+    Users,
+    name="userAvatar",
+    exclude=(
+        "created_at",
+        "modified_at",
+        "start_time",
+        "end_time",
+        "active",
+        "email",
+        "nickname",
+    )
+)
 users_videos_pydantic = pydantic_model_creator(
     Users,
     name="userVideos",
     exclude=(
-        "password",
         "created_at",
         "modified_at",
         "start_time",

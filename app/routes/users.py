@@ -31,7 +31,7 @@ router = APIRouter(
 add_pagination(router)
 
 
-@router.get("/user", response_model=UserProfileSchemaOut)
+@router.get("/profile", response_model=UserProfileSchemaOut)
 async def retrieve_user_view(user_id: int = Depends(verify_access_token)):
     try:
         user = await retrieve_user(user_id=user_id)
