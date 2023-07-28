@@ -41,6 +41,7 @@ async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_fie
     qs.videos.related_objects = user_videos_pagination
     return qs
 
+
 async def create_user(create_object: dict):
     try:
         user = await Users.create(**create_object)
