@@ -67,6 +67,7 @@ async def create_mp4_video_view(
         information=information,
         url=f"{setting.S3_BASE_URL}/{upload_file.filename}",
         type=VideoTypeEnum.MP4,
+        user_id=user_id,
     )
     video = await create_video(create_object=schema.dict())
 

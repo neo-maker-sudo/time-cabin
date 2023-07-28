@@ -31,7 +31,7 @@ router = APIRouter(
 add_pagination(router)
 
 
-@router.get("/user", response_model=UserProfileSchemaOut)
+@router.get("/profile", response_model=UserProfileSchemaOut)
 async def retrieve_user_view(user_id: int = Depends(verify_access_token)):
     try:
         user = await retrieve_user(user_id=user_id)
@@ -56,12 +56,11 @@ async def create_user_view(schema: UserCreateSchemaIn):
 
 @router.patch("/update/user/avatar", response_model=UserUpdateAvatarSchemaOut)
 async def update_user_avatar_view(
-    user_id: int = Depends(verify_access_token),
-    upload_file: UploadFile = Depends(verify_avatar_entension),
+    depends_object: dict = Depends(verify_avatar_entension),
 ):
     try:
-        user = await update_user_avatar(user_id, update_object={
-            "avatar": upload_file
+        user = await update_user_avatar(depends_object["user_id"], update_object={
+            "avatar": depends_object["upload_file"]
         })
 
     except InstanceDoesNotExistException as exc:
@@ -109,7 +108,7 @@ async def retrieve_user_videos_view(
             user_id,
             page=page,
             size=size,
-            order_field=(["created_at"] if not o else o ),
+            order_field=(["-created_at"] if not o else o ),
         )
 
     except InstanceDoesNotExistException as exc:

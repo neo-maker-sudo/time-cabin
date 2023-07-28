@@ -11,7 +11,7 @@ class VideoCreateSchemaIn(BaseModel):
     information: str = Field(default="")
     url: str
     type: VideoTypeEnum
-
+    user_id: int
 
 class VideoCreateSchemaOut(video_pydantic):
     created_at: datetime

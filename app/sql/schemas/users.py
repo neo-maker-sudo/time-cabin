@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 from app.config import setting
 from app.utils.general import convert_datetime_format
-from app.sql.models.users import users_pydantic, users_videos_pydantic
+from app.sql.models.users import users_pydantic, users_videos_pydantic, user_update_pydantic, user_avatar_pydantic
 from app.sql.schemas.videos import video_pydantic
 
 class UserProfileSchemaOut(users_pydantic):
@@ -30,28 +30,16 @@ class UserCreateSchemaOut(users_pydantic):
         }
 
 
-class UserUpdateAvatarSchemaOut(users_pydantic):
-    created_at: datetime
-    modified_at: datetime
-
-    class Config:
-        json_encoders = {
-            datetime: lambda datetime: convert_datetime_format(datetime, setting.DATE_TIME_FORMAT)
-        }
+class UserUpdateAvatarSchemaOut(user_avatar_pydantic):
+    ...
 
 
 class UserUpdateSchemaIn(BaseModel):
     nickname: str = Field(..., max_length=64)
 
 
-class UserUpdateSchemaOut(users_pydantic):
-    created_at: datetime
-    modified_at: datetime
-
-    class Config:
-        json_encoders = {
-            datetime: lambda datetime: convert_datetime_format(datetime, setting.DATE_TIME_FORMAT)
-        }
+class UserUpdateSchemaOut(user_update_pydantic):
+    ...
 
 
 class UserVideosPaginationSchema(BaseModel):

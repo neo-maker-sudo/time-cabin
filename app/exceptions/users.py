@@ -5,7 +5,14 @@ from .base import HTTPBase
 class AvatarFileExtensionException(
     HTTPBase,
     status_code=status.HTTP_400_BAD_REQUEST,
-    detail="invalid file extension"
+    detail="無效檔案格式"
+): pass
+
+
+class AvatarFileSizeOverException(
+    HTTPBase,
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="超過檔案限制大小"
 ): pass
 
 

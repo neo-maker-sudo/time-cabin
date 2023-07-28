@@ -5,7 +5,7 @@ from .base import HTTPBase
 class JWTUnauthorizeException(
     HTTPBase,
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="invalid or expired token",
+    detail="無效或過期的驗證",
     headers={"WWW-Authenticate": "Bearer"},
 ): pass
 
@@ -13,28 +13,28 @@ class JWTUnauthorizeException(
 class InstanceDoesNotExistException(
     HTTPBase,
     status_code=status.HTTP_404_NOT_FOUND,
-    detail="instance not found",
+    detail="實例找不到",
 ): pass
 
 
 class AWSClientException(
     HTTPBase,
     status_code=status.HTTP_406_NOT_ACCEPTABLE,
-    detail="upload image error due to network, service, permission etc...",
+    detail="上傳作業錯誤，可能因為網路、服務、或權限等等因素",
 ): pass
 
 
 class AWSLimitExceededException(
     HTTPBase,
     status_code=status.HTTP_400_BAD_REQUEST,
-    detail="API rate limit exceeded, backing off and retrying",
+    detail="流量超過，請稍後再試",
 ): pass
 
 
 class AWSParamValidationException(
     HTTPBase,
     status_code=status.HTTP_400_BAD_REQUEST,
-    detail="invalid or not found cloud argument",
+    detail="無效查找",
 ): pass
 
 

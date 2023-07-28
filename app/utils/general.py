@@ -8,6 +8,7 @@ from tempfile import NamedTemporaryFile, SpooledTemporaryFile, TemporaryDirector
 from urllib.parse import urlencode, urlparse, urlunparse
 from fastapi import UploadFile
 from app.exceptions.general import ConvertDatetimeFormatException
+from app.exceptions.users import AvatarFileSizeOverException
 from app.enums.general import TimeZoneEnum
 
 
@@ -75,3 +76,8 @@ def convert_datetime_format(utc_dt: datetime, format: str):
         raise e
 
     return local_dt
+
+
+def validate_avatar_size(size: int, maximum_size: int) -> None:
+    if size > maximum_size:
+        raise AvatarFileSizeOverException

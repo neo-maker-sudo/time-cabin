@@ -26,7 +26,7 @@ async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_fie
         if not (
             qs := await Users.get(id=user_id)
             .prefetch_related(
-                Prefetch("videos", queryset=Videos.filter().order_by(*order_field))
+                Prefetch("videos", queryset=Videos.filter())
             )
         ):
             raise DoesNotExist
@@ -37,9 +37,10 @@ async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_fie
     except FieldError:
         raise InstanceFieldException
 
-    user_videos_pagination = await paginate(qs.videos, params=params)
+    user_videos_pagination = await paginate(qs.videos.order_by(*order_field), params=params)
     qs.videos.related_objects = user_videos_pagination
     return qs
+
 
 async def create_user(create_object: dict):
     try:
@@ -65,7 +66,10 @@ async def update_user_avatar(user_id: int, update_object: dict):
     except DoesNotExist:
         raise InstanceDoesNotExistException
 
-    return await users_pydantic.from_queryset_single(Users.get(id=user_id))
+    except Exception as e:
+        raise e
+
+    return await Users.get(id=user_id)
 
 
 async def update_user(user_id: int, update_object: dict):
@@ -75,7 +79,10 @@ async def update_user(user_id: int, update_object: dict):
     except DoesNotExist:
         raise InstanceDoesNotExistException
 
-    return await users_pydantic.from_queryset_single(Users.get(id=user_id))
+    except Exception as e:
+        raise e
+
+    return await Users.get(id=user_id)
 
 
 async def delete_user(user_id: int) -> None:

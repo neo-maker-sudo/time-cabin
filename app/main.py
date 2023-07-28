@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -40,5 +40,8 @@ async def application_startup_event():
     ])
 
 @app.get("/")
-def home_page_view():
-    return {"Hello": "m3u8"}
+def home_page_view(request: Request):
+    return {
+        "IP": request.client.host,
+        "DS": setting.DOCKER_STATUS,
+    }
