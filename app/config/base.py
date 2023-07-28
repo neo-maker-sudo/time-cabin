@@ -5,6 +5,7 @@ from app.enums.video import VideoDestinationFolderEnum
 
 
 BASE_DIR = Path(__file__).parent.parent.parent
+DOCKER_STATUS = os.getenv("DOCKER_STATUS")
 HOST_SCHEME: str = os.getenv("HOST_SCHEME")
 HOST_NAME: str = os.getenv("HOST_NAME")
 
@@ -40,8 +41,8 @@ S3_TRANSFER_CONFIG = boto3.s3.transfer.TransferConfig(
     multipart_chunksize=1024 * 50,  # 50 MB
 )
 
-M3U8_DESTINATION_FOLDER = BASE_DIR / VideoDestinationFolderEnum.M3U8.value
-MP4_DESTINATION_FOLDER = BASE_DIR / VideoDestinationFolderEnum.MP4.value
+M3U8_DESTINATION_FOLDER = BASE_DIR / "static" / VideoDestinationFolderEnum.M3U8.value
+MP4_DESTINATION_FOLDER = BASE_DIR / "static" / VideoDestinationFolderEnum.MP4.value
 
 PASSWORD_REGEX = r"((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,12})"
 
