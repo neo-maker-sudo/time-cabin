@@ -52,6 +52,7 @@ JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
 JWT_EXPIRE_DAYS: int = 2
 
 AVATAR_UPLOAD_TO: str = "static/avatar/"
+AVATAR_MAXIMUM_SIZE: int = 1024 * 1024 * 2
 PUBLIC_UPLOAD_TO: str = "static/public/"
 
 STATIC_URL = {

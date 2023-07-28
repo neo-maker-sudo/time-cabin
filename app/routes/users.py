@@ -56,12 +56,11 @@ async def create_user_view(schema: UserCreateSchemaIn):
 
 @router.patch("/update/user/avatar", response_model=UserUpdateAvatarSchemaOut)
 async def update_user_avatar_view(
-    user_id: int = Depends(verify_access_token),
-    upload_file: UploadFile = Depends(verify_avatar_entension),
+    depends_object: dict = Depends(verify_avatar_entension),
 ):
     try:
-        user = await update_user_avatar(user_id, update_object={
-            "avatar": upload_file
+        user = await update_user_avatar(depends_object["user_id"], update_object={
+            "avatar": depends_object["upload_file"]
         })
 
     except InstanceDoesNotExistException as exc:
