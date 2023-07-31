@@ -10,6 +10,7 @@ from app.sql.crud.users import (
     update_user_avatar,
     retrieve_user,
     delete_user,
+    retrieve_user_video,
     retrieve_user_videos,
 )
 from app.sql.schemas.users import (
@@ -19,6 +20,7 @@ from app.sql.schemas.users import (
     UserUpdateSchemaIn,
     UserUpdateAvatarSchemaOut,
     UserUpdateSchemaOut,
+    UserVideoSchemaOut,
     UserVideosSchemaOut,
 )
 from app.utils.security import hash_password, verify_access_token
@@ -118,3 +120,17 @@ async def retrieve_user_videos_view(
         raise exc.raise_http_exception()
 
     return user_videos
+
+
+@router.get("/profile/{video_id}/video", response_model=UserVideoSchemaOut)
+async def retrieve_profile_video_view(
+    video_id: int,
+    user_id: int = Depends(verify_access_token),
+):
+    try:
+        video = await retrieve_user_video(user_id, video_id=video_id)
+
+    except InstanceDoesNotExistException as exc:
+        raise exc.raise_http_exception()
+
+    return video

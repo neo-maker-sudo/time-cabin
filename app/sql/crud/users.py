@@ -19,6 +19,16 @@ async def retrieve_user(user_id):
     return user
 
 
+async def retrieve_user_video(user_id: int, /, *, video_id: int):
+    try:
+        video = await Videos.get(id=video_id, user_id=user_id)
+        
+    except DoesNotExist:
+        raise InstanceDoesNotExistException
+
+    return video
+
+
 async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_field: list):
     try:
         params = VideoParams(page=page, size=size)

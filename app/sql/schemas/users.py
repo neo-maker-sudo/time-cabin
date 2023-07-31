@@ -57,3 +57,9 @@ class UserVideosSchemaOut(users_videos_pydantic):
         json_encoders = {
             datetime: lambda datetime: convert_datetime_format(datetime, setting.DATE_TIME_FORMAT)
         }
+
+
+class UserVideoSchemaOut(BaseModel):
+    name: str
+    information: str
+    url: str
