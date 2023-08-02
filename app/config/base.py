@@ -14,7 +14,8 @@ DATABASE_MIGRATION_MODELS: list = [
     "app.sql.models.video",
     "app.sql.models.users",
 ]
-
+VIDEO_NAME_FIELD_MIN_LENGTH: int = 1
+VIDEO_NAME_FIELD_MAX_LENGTH: int = 64
 
 S3_BUCKET_NAME: str = os.getenv("S3_BUCKET_NAME")
 S3_REGION_NAME: str = os.getenv("S3_REGION_NAME")

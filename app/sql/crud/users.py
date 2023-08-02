@@ -5,6 +5,7 @@ from fastapi_pagination.ext.tortoise import paginate
 from app.utils.pagination import VideoParams
 from app.exceptions.general import InstanceDoesNotExistException, InstanceFieldException
 from app.exceptions.users import UserUniqueConstraintException
+from app.exceptions.videos import VideoNameFieldMaxLengthException
 from app.sql.models.users import Users, users_pydantic
 from app.sql.models.video import Videos
 
@@ -22,20 +23,21 @@ async def retrieve_user(user_id):
 async def retrieve_user_video(user_id: int, /, *, video_id: int):
     try:
         video = await Videos.get(id=video_id, user_id=user_id)
-        
+
     except DoesNotExist:
         raise InstanceDoesNotExistException
 
     return video
 
 
-async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_field: list):
+async def retrieve_user_videos(
+    user_id: int, /, *, page: int, size: int, order_field: list
+):
     try:
         params = VideoParams(page=page, size=size)
 
         if not (
-            qs := await Users.get(id=user_id)
-            .prefetch_related(
+            qs := await Users.get(id=user_id).prefetch_related(
                 Prefetch("videos", queryset=Videos.filter())
             )
         ):
@@ -47,7 +49,9 @@ async def retrieve_user_videos(user_id: int, /, *, page:int, size:int, order_fie
     except FieldError:
         raise InstanceFieldException
 
-    user_videos_pagination = await paginate(qs.videos.order_by(*order_field), params=params)
+    user_videos_pagination = await paginate(
+        qs.videos.order_by(*order_field), params=params
+    )
     qs.videos.related_objects = user_videos_pagination
     return qs
 
@@ -102,3 +106,25 @@ async def delete_user(user_id: int) -> None:
 
     except DoesNotExist:
         raise InstanceDoesNotExistException
+
+
+async def update_user_video(video_id: int, user_id: int, update_object: dict):
+    try:
+        video = await Videos.get(id=video_id, user_id=user_id)
+        video.name = update_object["name"]
+        video.information = update_object["information"]
+        await video.save(update_fields=["name", "information"])
+
+    except VideoNameFieldMaxLengthException:
+        raise VideoNameFieldMaxLengthException
+
+    except DoesNotExist:
+        raise InstanceDoesNotExistException
+
+    except FieldError:
+        raise InstanceFieldException
+
+    except Exception as e:
+        raise e
+
+    return video
