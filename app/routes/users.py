@@ -14,6 +14,7 @@ from app.sql.crud.users import (
     retrieve_user_video,
     retrieve_user_videos,
     update_user_video,
+    delete_user_video,
 )
 from app.sql.schemas.users import (
     UserProfileSchemaOut,
@@ -159,3 +160,17 @@ async def update_profile_video_view(
         raise exc.raise_http_exception()
 
     return video
+
+
+@router.delete("/profile/delete/{video_id}/video", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_profile_video_view(
+    video_id: int,
+    user_id: int = Depends(verify_access_token),
+):
+    try:
+        await delete_user_video(video_id=video_id, user_id=user_id)
+
+    except InstanceDoesNotExistException as exc:
+        raise exc.raise_http_exception()
+
+    return "OK"

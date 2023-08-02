@@ -128,3 +128,14 @@ async def update_user_video(video_id: int, user_id: int, update_object: dict):
         raise e
 
     return video
+
+
+async def delete_user_video(video_id: int, user_id: int):
+    try:
+        deleted_count= await Videos.filter(id=video_id, user_id=user_id).delete()
+
+        if not deleted_count:
+            raise DoesNotExist
+
+    except DoesNotExist:
+        raise InstanceDoesNotExistException
