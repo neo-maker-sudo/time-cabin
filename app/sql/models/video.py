@@ -1,16 +1,16 @@
-
 from tortoise import fields, models
 from tortoise.contrib.pydantic import pydantic_model_creator
 from app.config import setting
-from app.enums.video import VideoTypeEnum
+from app.enums.video import VideoTypeCreateEnum
 from app.exceptions.videos import VideoNameFieldMaxLengthException
+
 
 class Videos(models.Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=setting.VIDEO_NAME_FIELD_MAX_LENGTH)
     information = fields.TextField(default="")
-    type = fields.CharEnumField(enum_type=VideoTypeEnum, max_length=10)
-    url = fields.CharField(max_length=256)
+    type = fields.CharEnumField(enum_type=VideoTypeCreateEnum, max_length=10, null=True)
+    url = fields.TextField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
     modified_at = fields.DatetimeField(auto_now=True)
 
