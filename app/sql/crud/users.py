@@ -108,6 +108,30 @@ async def delete_user(user_id: int) -> None:
         raise InstanceDoesNotExistException
 
 
+async def create_user_video(create_object):
+    try:
+        video = await Videos.create(**create_object)
+
+    except VideoNameFieldMaxLengthException:
+        raise VideoNameFieldMaxLengthException
+
+    except Exception as e:
+        raise e
+
+    return video
+
+
+async def insert_user_video(video_id: int, user_id: int, update_object: dict):
+    try:
+        video = await Videos.get(id=video_id, user_id=user_id)
+        video.type = update_object["type"]
+        video.url = update_object["url"]
+        await video.save(update_fields=["type", "url"])
+
+    except Exception as e:
+        raise e
+
+
 async def update_user_video(video_id: int, user_id: int, update_object: dict):
     try:
         video = await Videos.get(id=video_id, user_id=user_id)

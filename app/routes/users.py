@@ -1,7 +1,8 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, UploadFile, status, Query, Form, BackgroundTasks
 from fastapi_pagination import add_pagination
-from app.dependencies import verify_avatar_entension
+from app.backgrounds.videos import process_transcoding
+from app.dependencies import verify_avatar_entension, verify_video_extension
 from app.exceptions.general import InstanceDoesNotExistException, InstanceFieldException
 from app.exceptions.users import UserUniqueConstraintException
 from app.exceptions.videos import VideoNameFieldMaxLengthException
@@ -13,6 +14,7 @@ from app.sql.crud.users import (
     delete_user,
     retrieve_user_video,
     retrieve_user_videos,
+    create_user_video,
     update_user_video,
     delete_user_video,
 )
@@ -27,9 +29,12 @@ from app.sql.schemas.users import (
     UserVideosSchemaOut,
 )
 from app.sql.schemas.videos import (
+    VideoCreateSchemaIn,
+    VideoCreateSchemaOut,
     VideoUpdateSchemaIn,
     VideoUpdateSchemaOut,
 )
+from app.utils.cloud import upload_file_to_s3
 from app.utils.security import hash_password, verify_access_token
 
 
@@ -137,6 +142,40 @@ async def retrieve_profile_video_view(
 
     except InstanceDoesNotExistException as exc:
         raise exc.raise_http_exception()
+
+    return video
+
+
+@router.post("/profile/create/video", status_code=status.HTTP_201_CREATED, response_model=VideoCreateSchemaOut)
+async def create_user_video_view(
+    background_task: BackgroundTasks,
+    upload_file: UploadFile = Depends(verify_video_extension),
+    name: str = Form(..., max_length=64),
+    information: str = Form(""),
+    user_id: int = Depends(verify_access_token),
+):
+    filename_folder = upload_file_to_s3(
+        upload_file=upload_file,
+        user_id=user_id,
+    )
+
+    # save into database
+    schema = VideoCreateSchemaIn(
+        name=name,
+        information=information,
+        user_id=user_id,
+    )
+
+    video = await create_user_video(create_object=schema.dict())
+
+    background_task.add_task(
+        process_transcoding,
+        folder=str(user_id),
+        filename=upload_file.filename,
+        filename_folder=filename_folder,
+        video_id=video.id,
+        user_id=user_id,
+    )
 
     return video
 

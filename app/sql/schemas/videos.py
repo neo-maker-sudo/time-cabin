@@ -1,7 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
 from app.config import setting
-from app.enums.video import VideoTypeEnum
 from app.utils.general import convert_datetime_format
 from app.sql.models.video import video_pydantic, video_update_pydantic
 
@@ -9,9 +8,10 @@ from app.sql.models.video import video_pydantic, video_update_pydantic
 class VideoCreateSchemaIn(BaseModel):
     name: str
     information: str = Field(default="")
-    url: str
-    type: VideoTypeEnum
+    url: str = Field(None)
+    type: str = Field(None)
     user_id: int
+
 
 class VideoCreateSchemaOut(video_pydantic):
     created_at: datetime
