@@ -36,12 +36,12 @@ async def retrieve_user_videos(
     try:
         params = VideoParams(page=page, size=size)
 
-        if not (
-            qs := await Users.get(id=user_id).prefetch_related(
-                Prefetch("videos", queryset=Videos.filter())
-            )
-        ):
-            raise DoesNotExist
+        user = await Users.get(id=user_id).prefetch_related("videos")
+        user_videos_pagination = await paginate(
+            Videos.filter(user_id=user_id, type__isnull=False, url__isnull=False).order_by(*order_field), 
+            params=params
+        )
+        user.videos.related_objects = user_videos_pagination
 
     except DoesNotExist:
         raise InstanceDoesNotExistException
@@ -49,11 +49,7 @@ async def retrieve_user_videos(
     except FieldError:
         raise InstanceFieldException
 
-    user_videos_pagination = await paginate(
-        qs.videos.order_by(*order_field), params=params
-    )
-    qs.videos.related_objects = user_videos_pagination
-    return qs
+    return user
 
 
 async def create_user(create_object: dict):
