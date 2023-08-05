@@ -1,6 +1,5 @@
 from asyncpg.exceptions import UniqueViolationError
 from tortoise.exceptions import IntegrityError, DoesNotExist, FieldError
-from tortoise.query_utils import Prefetch
 from fastapi_pagination.ext.tortoise import paginate
 from app.utils.pagination import VideoParams
 from app.exceptions.general import InstanceDoesNotExistException, InstanceFieldException
@@ -56,7 +55,6 @@ async def create_user(create_object: dict):
     try:
         user = await Users.create(**create_object)
 
-    # need to add tortoise validation error
     except IntegrityError as exc:
         if exc.args[0].__class__.__name__ == UniqueViolationError.__name__:
             raise UserUniqueConstraintException
@@ -71,7 +69,7 @@ async def update_user_avatar(user_id: int, update_object: dict):
     try:
         user = await Users.get(id=user_id)
         user.avatar = update_object["avatar"]
-        await user.save(update_fields=["avatar"])
+        await user.save(update_fields=["avatar", "modified_at"])
 
     except DoesNotExist:
         raise InstanceDoesNotExistException
@@ -84,7 +82,9 @@ async def update_user_avatar(user_id: int, update_object: dict):
 
 async def update_user(user_id: int, update_object: dict):
     try:
-        await Users.filter(id=user_id).update(**update_object)
+        user = await Users.get(id=user_id)
+        user.nickname = update_object["nickname"]
+        await user.save(update_fields=["nickname", "modified_at"])
 
     except DoesNotExist:
         raise InstanceDoesNotExistException
@@ -133,7 +133,7 @@ async def update_user_video(video_id: int, user_id: int, update_object: dict):
         video = await Videos.get(id=video_id, user_id=user_id)
         video.name = update_object["name"]
         video.information = update_object["information"]
-        await video.save(update_fields=["name", "information"])
+        await video.save(update_fields=["name", "information", "modified_at"])
 
     except VideoNameFieldMaxLengthException:
         raise VideoNameFieldMaxLengthException
