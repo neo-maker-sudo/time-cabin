@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, UploadFile, status, Query, Form, BackgroundTasks
+from fastapi import APIRouter, Depends, UploadFile, status, Query, BackgroundTasks
 from fastapi_pagination import add_pagination
 from app.backgrounds.videos import process_transcoding
 from app.dependencies import verify_avatar_entension, verify_video_extension
@@ -27,6 +27,7 @@ from app.sql.schemas.users import (
     UserUpdateSchemaOut,
     UserVideoSchemaOut,
     UserVideosSchemaOut,
+    UserVideoCreateFormSchema,
 )
 from app.sql.schemas.videos import (
     VideoCreateSchemaIn,
@@ -150,8 +151,7 @@ async def retrieve_profile_video_view(
 async def create_user_video_view(
     background_task: BackgroundTasks,
     upload_file: UploadFile = Depends(verify_video_extension),
-    name: str = Form(..., max_length=64),
-    information: str = Form(""),
+    form_data: UserVideoCreateFormSchema = Depends(),
     user_id: int = Depends(verify_access_token),
 ):
     filename_folder = upload_file_to_s3(
@@ -161,8 +161,8 @@ async def create_user_video_view(
 
     # save into database
     schema = VideoCreateSchemaIn(
-        name=name,
-        information=information,
+        name=form_data.name,
+        information=form_data.information,
         user_id=user_id,
     )
 
