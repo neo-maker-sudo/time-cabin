@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, status, Depends, Form
 from app.config import setting
 from app.dependencies import verify_video_extension
-from app.exceptions.general import InstanceDoesNotExistException
+from app.exceptions.videos import VideoDoesNotExistException
 from app.enums.video import VideoTypeEnum
 from app.sql.schemas.videos import (
     VideoCreateSchemaIn,
@@ -36,7 +36,7 @@ async def retrieve_single_mp4_video_view(
     try:
         video = await retrieve_video(video_id=video_id)
 
-    except InstanceDoesNotExistException as exc:
+    except VideoDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return video
@@ -103,7 +103,7 @@ async def delete_mp4_video_view(
     try:
         await delete_video(video_id=video_id)
 
-    except InstanceDoesNotExistException as exc:
+    except VideoDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return "OK"

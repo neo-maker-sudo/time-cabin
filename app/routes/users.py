@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, UploadFile, status, Query, BackgroundTas
 from fastapi_pagination import add_pagination
 from app.backgrounds.videos import process_transcoding
 from app.dependencies import verify_avatar_entension, verify_video_extension
-from app.exceptions.general import InstanceDoesNotExistException, InstanceFieldException
-from app.exceptions.users import UserUniqueConstraintException
-from app.exceptions.videos import VideoNameFieldMaxLengthException
+from app.exceptions.general import InstanceFieldException
+from app.exceptions.users import UserUniqueConstraintException, UserDoesNotExistException
+from app.exceptions.videos import VideoNameFieldMaxLengthException, VideoDoesNotExistException
 from app.sql.crud.users import (
     create_user,
     update_user,
@@ -48,7 +48,7 @@ async def retrieve_user_view(user_id: int = Depends(verify_access_token)):
     try:
         user = await retrieve_user(user_id=user_id)
 
-    except InstanceDoesNotExistException as exc:
+    except UserDoesNotExistException as exc:
         exc.raise_http_exception()
 
     return user
@@ -78,7 +78,7 @@ async def update_user_avatar_view(
             update_object={"avatar": depends_object["upload_file"]},
         )
 
-    except InstanceDoesNotExistException as exc:
+    except UserDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return user
@@ -92,7 +92,7 @@ async def update_user_view(
     try:
         user = await update_user(user_id, schema.dict())
 
-    except InstanceDoesNotExistException as exc:
+    except UserDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return user
@@ -103,7 +103,7 @@ async def delete_user_view(user_id: int = Depends(verify_access_token)):
     try:
         await delete_user(user_id=user_id)
 
-    except InstanceDoesNotExistException as exc:
+    except UserDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return "OK"
@@ -124,7 +124,7 @@ async def retrieve_user_videos_view(
             order_field=(["-created_at"] if not o else o),
         )
 
-    except InstanceDoesNotExistException as exc:
+    except UserDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     except InstanceFieldException as exc:
@@ -141,7 +141,7 @@ async def retrieve_profile_video_view(
     try:
         video = await retrieve_user_video(user_id, video_id=video_id)
 
-    except InstanceDoesNotExistException as exc:
+    except VideoDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return video
@@ -192,10 +192,7 @@ async def update_profile_video_view(
     except VideoNameFieldMaxLengthException as exc:
         raise exc.raise_http_exception()
 
-    except InstanceDoesNotExistException as exc:
-        raise exc.raise_http_exception()
-
-    except InstanceFieldException as exc:
+    except VideoDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return video
@@ -209,7 +206,7 @@ async def delete_profile_video_view(
     try:
         await delete_user_video(video_id=video_id, user_id=user_id)
 
-    except InstanceDoesNotExistException as exc:
+    except VideoDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return "OK"

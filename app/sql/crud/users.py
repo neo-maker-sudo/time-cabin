@@ -2,9 +2,9 @@ from asyncpg.exceptions import UniqueViolationError
 from tortoise.exceptions import IntegrityError, DoesNotExist, FieldError
 from fastapi_pagination.ext.tortoise import paginate
 from app.utils.pagination import VideoParams
-from app.exceptions.general import InstanceDoesNotExistException, InstanceFieldException
-from app.exceptions.users import UserUniqueConstraintException
-from app.exceptions.videos import VideoNameFieldMaxLengthException
+from app.exceptions.general import InstanceFieldException
+from app.exceptions.users import UserUniqueConstraintException, UserDoesNotExistException
+from app.exceptions.videos import VideoNameFieldMaxLengthException, VideoDoesNotExistException
 from app.sql.models.users import Users, users_pydantic
 from app.sql.models.video import Videos
 
@@ -14,7 +14,7 @@ async def retrieve_user(user_id):
         user = await Users.get(id=user_id)
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise UserDoesNotExistException
 
     return user
 
@@ -24,7 +24,7 @@ async def retrieve_user_video(user_id: int, /, *, video_id: int):
         video = await Videos.get(id=video_id, user_id=user_id)
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise VideoDoesNotExistException
 
     return video
 
@@ -43,7 +43,7 @@ async def retrieve_user_videos(
         user.videos.related_objects = user_videos_pagination
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise UserDoesNotExistException
 
     except FieldError:
         raise InstanceFieldException
@@ -72,7 +72,7 @@ async def update_user_avatar(user_id: int, update_object: dict):
         await user.save(update_fields=["avatar", "modified_at"])
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise UserDoesNotExistException
 
     except Exception as e:
         raise e
@@ -87,7 +87,7 @@ async def update_user(user_id: int, update_object: dict):
         await user.save(update_fields=["nickname", "modified_at"])
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise UserDoesNotExistException
 
     except Exception as e:
         raise e
@@ -101,7 +101,7 @@ async def delete_user(user_id: int) -> None:
         await user.delete()
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise UserDoesNotExistException
 
 
 async def create_user_video(create_object):
@@ -139,10 +139,7 @@ async def update_user_video(video_id: int, user_id: int, update_object: dict):
         raise VideoNameFieldMaxLengthException
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
-
-    except FieldError:
-        raise InstanceFieldException
+        raise VideoDoesNotExistException
 
     except Exception as e:
         raise e
@@ -158,4 +155,4 @@ async def delete_user_video(video_id: int, user_id: int):
             raise DoesNotExist
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise VideoDoesNotExistException
