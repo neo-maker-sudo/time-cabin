@@ -10,13 +10,6 @@ class JWTUnauthorizeException(
 ): pass
 
 
-class InstanceDoesNotExistException(
-    HTTPBase,
-    status_code=status.HTTP_404_NOT_FOUND,
-    detail="實例找不到",
-): pass
-
-
 class AWSClientException(
     HTTPBase,
     status_code=status.HTTP_406_NOT_ACCEPTABLE,
@@ -47,6 +40,6 @@ class ConvertDatetimeFormatException(Exception):
 
 class InstanceFieldException(
     HTTPBase,
-    detail="錯誤排序欄位",
+    detail="排序欄位不存在",
     status_code=status.HTTP_400_BAD_REQUEST,
 ): pass

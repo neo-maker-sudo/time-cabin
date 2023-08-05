@@ -1,5 +1,5 @@
 from tortoise.exceptions import DoesNotExist
-from app.exceptions.general import InstanceDoesNotExistException
+from app.exceptions.videos import VideoDoesNotExistException
 from app.sql.models.video import video_pydantic, Videos
 
 
@@ -8,7 +8,7 @@ async def retrieve_video(video_id: int):
         video = await video_pydantic.from_queryset_single(Videos.get(id=video_id))
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise VideoDoesNotExistException
 
     return video
 
@@ -32,7 +32,6 @@ async def update_video(video_id: int, update_object: dict):
     try:
         await Videos.filter(id=video_id).update(**update_object)
 
-    # need to add tortoise validation error
     except Exception as e:
         raise e
 
@@ -47,4 +46,4 @@ async def delete_video(video_id: int) -> None:
             raise DoesNotExist
 
     except DoesNotExist:
-        raise InstanceDoesNotExistException
+        raise VideoDoesNotExistException

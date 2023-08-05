@@ -21,3 +21,10 @@ class UserUniqueConstraintException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="信箱重複註冊",
 ): pass
+
+
+class UserDoesNotExistException(
+    HTTPBase,
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="使用者不存在",
+): pass
