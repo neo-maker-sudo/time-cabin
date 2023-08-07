@@ -156,3 +156,18 @@ async def delete_user_video(video_id: int, user_id: int):
 
     except DoesNotExist:
         raise VideoDoesNotExistException
+
+
+async def update_user_password(user_id: int, hashed_password: str):
+    try:
+        user = await Users.get(id=user_id)
+        user.password = hashed_password
+        await user.save(update_fields=["password", "modified_at"])
+
+    except DoesNotExist:
+        raise UserDoesNotExistException
+
+    except Exception as e:
+        raise e
+
+    return await Users.get(id=user_id)

@@ -10,6 +10,7 @@ from app.sql.crud.users import (
     create_user,
     update_user,
     update_user_avatar,
+    update_user_password,
     retrieve_user,
     delete_user,
     retrieve_user_video,
@@ -28,6 +29,7 @@ from app.sql.schemas.users import (
     UserVideoSchemaOut,
     UserVideosSchemaOut,
     UserVideoCreateFormSchema,
+    ChangePasswordSchemaIn,
 )
 from app.sql.schemas.videos import (
     VideoCreateSchemaIn,
@@ -207,6 +209,21 @@ async def delete_profile_video_view(
         await delete_user_video(video_id=video_id, user_id=user_id)
 
     except VideoDoesNotExistException as exc:
+        raise exc.raise_http_exception()
+
+    return "OK"
+
+
+@router.patch("/change/password")
+async def change_user_password_view(
+    schema: ChangePasswordSchemaIn,
+    user_id: int = Depends(verify_access_token),
+):
+    hashed_password = hash_password(schema.password)
+    try:
+        await update_user_password(user_id, hashed_password=hashed_password)
+
+    except UserDoesNotExistException as exc:
         raise exc.raise_http_exception()
 
     return "OK"

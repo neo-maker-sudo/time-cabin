@@ -43,3 +43,17 @@ class InstanceFieldException(
     detail="排序欄位不存在",
     status_code=status.HTTP_400_BAD_REQUEST,
 ): pass
+
+
+class ChangePasswordInvalidException(
+    HTTPBase,
+    detail="密碼至少需要一個數字、一個大寫、一個小寫",
+    status_code=status.HTTP_400_BAD_REQUEST,        
+): pass
+
+
+class ChangePasswordNotMatchException(
+    HTTPBase,
+    detail="密碼與確認密碼不符合",
+    status_code=status.HTTP_400_BAD_REQUEST,
+): pass

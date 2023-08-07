@@ -53,7 +53,7 @@ S3_TRANSFER_CONFIG = boto3.s3.transfer.TransferConfig(
 M3U8_DESTINATION_FOLDER = BASE_DIR / "static" / VideoDestinationFolderEnum.M3U8.value
 MP4_DESTINATION_FOLDER = BASE_DIR / "static" / VideoDestinationFolderEnum.MP4.value
 
-PASSWORD_REGEX = r"((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,12})"
+PASSWORD_REGEX: str = r"((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,12})"
 
 DATE_TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
