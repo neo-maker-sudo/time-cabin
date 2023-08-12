@@ -65,8 +65,9 @@ class PasswordResetTokenGenerator:
 
         except ValueError:
             return False
-        
-        # make sure timestamp has not been tamper with 
+
+        # 1. 只要 user 申請完 token 後再登入，因為 last_login 時間戳的改變，所以之前所申請的 reset token 都會無法使用
+        # 2. 確保 timestamp/uid 不會被竄改
         if not constant_time_compare(
             self._make_token_with_timestamp(user, ts, self.secret),
             token

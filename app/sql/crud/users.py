@@ -1,12 +1,23 @@
 from asyncpg.exceptions import UniqueViolationError
 from tortoise.exceptions import IntegrityError, DoesNotExist, FieldError
 from fastapi_pagination.ext.tortoise import paginate
+from app.utils.general import urlsave_base64_decode
 from app.utils.pagination import VideoParams
 from app.exceptions.general import InstanceFieldException
 from app.exceptions.users import UserUniqueConstraintException, UserDoesNotExistException
 from app.exceptions.videos import VideoNameFieldMaxLengthException, VideoDoesNotExistException
 from app.sql.models.users import Users, users_pydantic
 from app.sql.models.video import Videos
+
+
+async def retrieve_user_by_email(email: str):
+    try:
+        user = await Users.get(email=email)
+
+    except DoesNotExist:
+        raise UserDoesNotExistException
+
+    return user
 
 
 async def retrieve_user(user_id):
@@ -171,3 +182,17 @@ async def update_user_password(user_id: int, hashed_password: str):
         raise e
 
     return await Users.get(id=user_id)
+
+
+async def retrieve_user_by_uidb64(uidb64: str):
+    user_id = urlsave_base64_decode(uidb64)
+    return await retrieve_user(user_id.decode())
+
+
+async def reset_user_password(user: Users, hashed_password: str):
+    try:
+        user.password = hashed_password
+        await user.save(update_fields=["password", "modified_at"])
+
+    except Exception as e:
+        raise e

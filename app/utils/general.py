@@ -139,7 +139,7 @@ def urlsave_base64_decode(string: str):
 
     try:
         return base64.urlsafe_b64decode(
-            s.ljust(len(e) + len(e) % 4, b"=")
+            s.ljust(len(s) + len(s) % 4, b"=")
         )
 
     except (LookupError, BinasciiError) as e:
