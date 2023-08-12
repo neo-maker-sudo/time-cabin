@@ -57,3 +57,8 @@ class ChangePasswordNotMatchException(
     detail="密碼與確認密碼不符合",
     status_code=status.HTTP_400_BAD_REQUEST,
 ): pass
+
+
+class InvalidAlgorithm(ValueError):
+    """Algorithm is not supported by hashlib."""
+    pass

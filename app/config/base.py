@@ -69,3 +69,6 @@ STATIC_URL = {
     "avatar": f"{HOST_SCHEME}://{HOST_NAME}/{AVATAR_UPLOAD_TO}",
     "public": f"{HOST_SCHEME}://{HOST_NAME}/{PUBLIC_UPLOAD_TO}",
 }
+
+PASSWORD_RESET_SECRET: str = os.getenv("PASSWORD_RESET_SECRET")
+PASSWORD_RESET_TIMEOUT: int = 60 * 60 * 24 * 1 # 1 day

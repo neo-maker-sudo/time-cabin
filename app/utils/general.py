@@ -12,6 +12,9 @@ from app.exceptions.users import AvatarFileSizeOverException
 from app.enums.general import TimeZoneEnum
 
 
+char_set = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+
 def path_query_params(path, parmas: dict) -> str:
     parsed = list(urlparse(path.__str__()))
     parsed[4] = urlencode(parmas)
@@ -81,3 +84,42 @@ def convert_datetime_format(utc_dt: datetime, format: str):
 def validate_avatar_size(size: int, maximum_size: int) -> None:
     if size > maximum_size:
         raise AvatarFileSizeOverException
+
+
+def force_bytes(s, encoding: str = "utf-8", errors: str = "strict"):
+    if isinstance(s, bytes) and encoding == "utf-8":
+        return s
+    elif isinstance(s, bytes) and encoding != "utf-8":
+        return s.decode("utf-8", errors=errors).encode(encoding, errors=errors)
+
+    if isinstance(s, memoryview):
+        return bytes(s)
+
+    return str(s).encode(encoding, errors=errors)
+
+
+def base36_to_integer(s):
+    if len(s) > 13:
+        raise ValueError("Base36 too large")
+
+    return int(s, 36)
+
+
+def integer_to_base36(i: int):
+
+    if not isinstance(i, int):
+        raise ValueError("Invalid input")
+
+    elif i < 0:
+        raise ValueError("Navigate base36 conversion input")
+
+    elif i < 36:
+        return char_set[i]
+
+    b36 = ""
+
+    while i != 0:
+        i, n = divmod(i, 36)
+        b36 = char_set[n] + b36
+
+    return b36
