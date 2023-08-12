@@ -62,3 +62,9 @@ class ChangePasswordNotMatchException(
 class InvalidAlgorithm(ValueError):
     """Algorithm is not supported by hashlib."""
     pass
+
+
+class EmailEncryptSetupException(ValueError):
+    def __init__(self, *args: object) -> None:
+        self.message = "EMAIL_USE_TLS 與 EMAIL_USE_SSL 是互斥的，只需要設定其中一個為 True"
+        super().__init__(*args)

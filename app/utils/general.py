@@ -1,4 +1,6 @@
+import base64
 import shutil
+from binascii import Error as BinasciiError
 from pytz import timezone
 from datetime import datetime
 from typing import Optional
@@ -123,3 +125,26 @@ def integer_to_base36(i: int):
         b36 = char_set[n] + b36
 
     return b36
+
+
+def urlsafe_base64_encode(string: bytes):
+    if not isinstance(string, bytes):
+        string = force_bytes(string)
+
+    return base64.urlsafe_b64encode(string).rstrip(b"\n=").decode("ascii")
+
+
+def urlsave_base64_decode(string: str):
+    s = string.encode()
+
+    try:
+        return base64.urlsafe_b64decode(
+            s.ljust(len(e) + len(e) % 4, b"=")
+        )
+
+    except (LookupError, BinasciiError) as e:
+        raise ValueError(e)
+
+
+def retrieve_today_dateime(format: str):
+    return datetime.today().strftime(format)
