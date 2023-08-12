@@ -11,3 +11,12 @@ async def retrieve_user_by_email(email: str):
         raise LoginInvalidException
 
     return user
+
+
+async def update_user_last_login(user: Users):
+    try:
+        await user.save(update_fields=["last_login"])
+
+    except Exception as e:
+        raise e
+

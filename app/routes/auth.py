@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.exceptions.auth import LoginInvalidException
 from app.utils.security import generate_access_token, verify_password
-from app.sql.crud.auth import retrieve_user_by_email
+from app.sql.crud.auth import retrieve_user_by_email, update_user_last_login
 from app.sql.schemas.auth import LoginSchemaIn, LoginSchemaOut
 
 
@@ -22,6 +22,7 @@ async def login_view(schema: LoginSchemaIn):
     if not verify_password(schema.password, user.password):
         raise LoginInvalidException.raise_http_exception()
 
+    await update_user_last_login(user)
 
     return {
         "access_token": generate_access_token({"user_id": user.id}),
