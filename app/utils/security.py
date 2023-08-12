@@ -59,9 +59,6 @@ def constant_time_compare(val1, val2):
 
 
 def salted_hmac(hash_value: str, salt: str, /, *, secret=None, algorithm=None):
-    if algorithm is None:
-        algorithm = "sha1"
-
     salt_bytes = force_bytes(salt)
     secrets_bytes = force_bytes(secret)
     hash_bytes = force_bytes(hash_value)

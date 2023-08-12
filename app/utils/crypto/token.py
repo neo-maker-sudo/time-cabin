@@ -15,6 +15,9 @@ class PasswordResetTokenGenerator:
     _secret = None
     _algorithm = None
 
+    def __init__(self):
+        self._algorithm = self._algorithm or "sha256"
+
     def _get_secret(self):
         return self._secret or setting.PASSWORD_RESET_SECRET
 
