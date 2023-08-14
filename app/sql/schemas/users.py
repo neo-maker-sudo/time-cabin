@@ -1,7 +1,15 @@
+import re
 from datetime import datetime
 from fastapi import Form
-from pydantic import BaseModel, EmailStr, Field, validator, parse_obj_as
+from pydantic import BaseModel, EmailStr, Field, validator, parse_obj_as, root_validator
 from app.config import setting
+from app.enums.general import ChangedPasswordLengthEnum
+from app.exceptions.general import (
+    PasswordEmptyException,
+    ChangePasswordEqualException,
+    ChangePasswordInvalidException,
+    ChangePasswordNotMatchException,
+)
 from app.utils.general import convert_datetime_format
 from app.sql.models.users import users_pydantic, users_videos_pydantic, user_update_pydantic, user_avatar_pydantic
 from app.sql.schemas.videos import video_pydantic
@@ -103,3 +111,76 @@ class UserVideoSchemaOut(BaseModel):
     name: str
     information: str
     url: str
+
+
+class ChangePasswordSchemaIn(BaseModel):
+    old_password: str = Field(
+        ...,
+        min_length=ChangedPasswordLengthEnum.PasswordMinLength,
+        max_length=ChangedPasswordLengthEnum.PasswordMaxLength,
+    )
+    new_password: str = Field(
+        ...,
+        min_length=ChangedPasswordLengthEnum.PasswordMinLength,
+        max_length=ChangedPasswordLengthEnum.PasswordMaxLength,
+    )
+    confirm_password: str= Field(
+        ...,
+        min_length=ChangedPasswordLengthEnum.PasswordMinLength,
+        max_length=ChangedPasswordLengthEnum.PasswordMaxLength,
+    )
+
+    @root_validator(pre=True)
+    def validate_password(cls, values):
+        pw1 = values.get("old_password", None)
+        pw2 = values.get("new_password", None)
+        pw3 = values.get("confirm_password", None)
+
+        if not re.findall(setting.PASSWORD_REGEX, pw2):
+            raise ChangePasswordInvalidException.raise_http_exception()
+
+        elif pw1 is None or pw2 is None or pw3 is None:
+            raise PasswordEmptyException.raise_http_exception()
+
+        elif pw1 == pw2:
+            raise ChangePasswordEqualException.raise_http_exception()
+
+        elif pw2 is not None and pw3 is not None and pw2 != pw3:
+            raise ChangePasswordNotMatchException.raise_http_exception()
+        
+        return values
+
+
+class PassowrdResetSchemaIn(BaseModel):
+    email: EmailStr = Field(...)
+
+
+class PasswordResetConfirmSchemaIn(BaseModel):
+    uid: str = Field(...)
+    token: str = Field(...)
+    new_password: str = Field(
+        ...,
+        min_length=ChangedPasswordLengthEnum.PasswordMinLength,
+        max_length=ChangedPasswordLengthEnum.PasswordMaxLength,
+    )
+    confirm_password: str= Field(
+        ...,
+        min_length=ChangedPasswordLengthEnum.PasswordMinLength,
+        max_length=ChangedPasswordLengthEnum.PasswordMaxLength,
+    )
+
+    @root_validator(pre=True)
+    def validate_password(cls, values):
+        pw1 = values.get("new_password", None)
+        pw2 = values.get("confirm_password", None)
+
+        if not re.findall(setting.PASSWORD_REGEX, pw1):
+            raise ChangePasswordInvalidException.raise_http_exception()
+
+        elif pw1 is None or pw2 is None:
+            raise PasswordEmptyException.raise_http_exception()
+
+        elif pw1 is not None and pw2 is not None and pw1 != pw2:
+            raise ChangePasswordNotMatchException.raise_http_exception()
+        
+        return values

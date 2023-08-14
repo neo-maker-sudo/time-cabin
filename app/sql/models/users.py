@@ -15,6 +15,7 @@ class Users(models.Model):
     avatar = FileField(upload_to=setting.AVATAR_UPLOAD_TO, null=True)
     password = fields.CharField(max_length=setting.USER_PASSWORD_FIELD_MAX_LENGTH, null=False)
     created_at = fields.DatetimeField(auto_now_add=True)
+    last_login = fields.DatetimeField(auto_now=True)
     modified_at = fields.DatetimeField(auto_now=True)
 
     videos: fields.ReverseRelation["Videos"]

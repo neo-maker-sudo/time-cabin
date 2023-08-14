@@ -1,12 +1,24 @@
 from asyncpg.exceptions import UniqueViolationError
+from tortoise.transactions import atomic
 from tortoise.exceptions import IntegrityError, DoesNotExist, FieldError
 from fastapi_pagination.ext.tortoise import paginate
+from app.utils.general import urlsave_base64_decode
 from app.utils.pagination import VideoParams
 from app.exceptions.general import InstanceFieldException
 from app.exceptions.users import UserUniqueConstraintException, UserDoesNotExistException
 from app.exceptions.videos import VideoNameFieldMaxLengthException, VideoDoesNotExistException
 from app.sql.models.users import Users, users_pydantic
 from app.sql.models.video import Videos
+
+
+async def retrieve_user_by_email(email: str):
+    try:
+        user = await Users.get(email=email)
+
+    except DoesNotExist:
+        raise UserDoesNotExistException
+
+    return user
 
 
 async def retrieve_user(user_id):
@@ -51,6 +63,7 @@ async def retrieve_user_videos(
     return user
 
 
+@atomic()
 async def create_user(create_object: dict):
     try:
         user = await Users.create(**create_object)
@@ -65,6 +78,7 @@ async def create_user(create_object: dict):
     return await users_pydantic.from_tortoise_orm(user)
 
 
+@atomic()
 async def update_user_avatar(user_id: int, update_object: dict):
     try:
         user = await Users.get(id=user_id)
@@ -80,6 +94,7 @@ async def update_user_avatar(user_id: int, update_object: dict):
     return await Users.get(id=user_id)
 
 
+@atomic()
 async def update_user(user_id: int, update_object: dict):
     try:
         user = await Users.get(id=user_id)
@@ -95,6 +110,7 @@ async def update_user(user_id: int, update_object: dict):
     return await Users.get(id=user_id)
 
 
+@atomic()
 async def delete_user(user_id: int) -> None:
     try:
         user = await Users.get(id=user_id)
@@ -104,6 +120,7 @@ async def delete_user(user_id: int) -> None:
         raise UserDoesNotExistException
 
 
+@atomic()
 async def create_user_video(create_object):
     try:
         video = await Videos.create(**create_object)
@@ -117,6 +134,7 @@ async def create_user_video(create_object):
     return video
 
 
+@atomic()
 async def insert_user_video(video_id: int, user_id: int, update_object: dict):
     try:
         video = await Videos.get(id=video_id, user_id=user_id)
@@ -128,6 +146,7 @@ async def insert_user_video(video_id: int, user_id: int, update_object: dict):
         raise e
 
 
+@atomic()
 async def update_user_video(video_id: int, user_id: int, update_object: dict):
     try:
         video = await Videos.get(id=video_id, user_id=user_id)
@@ -147,6 +166,7 @@ async def update_user_video(video_id: int, user_id: int, update_object: dict):
     return video
 
 
+@atomic()
 async def delete_user_video(video_id: int, user_id: int):
     try:
         deleted_count= await Videos.filter(id=video_id, user_id=user_id).delete()
@@ -156,3 +176,34 @@ async def delete_user_video(video_id: int, user_id: int):
 
     except DoesNotExist:
         raise VideoDoesNotExistException
+
+
+@atomic()
+async def update_user_password(user_id: int, hashed_password: str):
+    try:
+        user = await Users.get(id=user_id)
+        user.password = hashed_password
+        await user.save(update_fields=["password", "modified_at"])
+
+    except DoesNotExist:
+        raise UserDoesNotExistException
+
+    except Exception as e:
+        raise e
+
+    return await Users.get(id=user_id)
+
+
+async def retrieve_user_by_uidb64(uidb64: str):
+    user_id = urlsave_base64_decode(uidb64)
+    return await retrieve_user(user_id.decode())
+
+
+@atomic()
+async def reset_user_password(user: Users, hashed_password: str):
+    try:
+        user.password = hashed_password
+        await user.save(update_fields=["password", "modified_at"])
+
+    except Exception as e:
+        raise e

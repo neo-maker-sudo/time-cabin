@@ -3,14 +3,18 @@ from fastapi import APIRouter, Depends, UploadFile, status, Query, BackgroundTas
 from fastapi_pagination import add_pagination
 from app.backgrounds.videos import process_transcoding
 from app.dependencies import verify_avatar_entension, verify_video_extension
-from app.exceptions.general import InstanceFieldException
+from app.exceptions.general import InstanceFieldException, PasswordResetInvalidException
 from app.exceptions.users import UserUniqueConstraintException, UserDoesNotExistException
 from app.exceptions.videos import VideoNameFieldMaxLengthException, VideoDoesNotExistException
 from app.sql.crud.users import (
     create_user,
     update_user,
     update_user_avatar,
+    update_user_password,
+    reset_user_password,
     retrieve_user,
+    retrieve_user_by_email,
+    retrieve_user_by_uidb64,
     delete_user,
     retrieve_user_video,
     retrieve_user_videos,
@@ -28,6 +32,9 @@ from app.sql.schemas.users import (
     UserVideoSchemaOut,
     UserVideosSchemaOut,
     UserVideoCreateFormSchema,
+    ChangePasswordSchemaIn,
+    PassowrdResetSchemaIn,
+    PasswordResetConfirmSchemaIn,
 )
 from app.sql.schemas.videos import (
     VideoCreateSchemaIn,
@@ -36,7 +43,9 @@ from app.sql.schemas.videos import (
     VideoUpdateSchemaOut,
 )
 from app.utils.cloud import upload_file_to_s3
+from app.utils.email import email_backend
 from app.utils.security import hash_password, verify_access_token
+from app.utils.crypto.token import token_generator
 
 
 router = APIRouter(prefix="/api", tags=["users"])
@@ -208,5 +217,54 @@ async def delete_profile_video_view(
 
     except VideoDoesNotExistException as exc:
         raise exc.raise_http_exception()
+
+    return "OK"
+
+
+@router.patch("/change/password")
+async def change_user_password_view(
+    schema: ChangePasswordSchemaIn,
+    user_id: int = Depends(verify_access_token),
+):
+    hashed_password = hash_password(schema.password)
+    try:
+        await update_user_password(user_id, hashed_password=hashed_password)
+
+    except UserDoesNotExistException as exc:
+        raise exc.raise_http_exception()
+
+    return "OK"
+
+
+@router.patch("/reset/password")
+async def reset_user_password_view(schema: PassowrdResetSchemaIn):
+    # 查詢 email
+    try:
+        user = await retrieve_user_by_email(schema.email)
+
+    except UserDoesNotExistException as exc:
+        raise exc.raise_http_exception()
+
+    # 生成 token
+    token = token_generator.make_token(user)
+    # 發送信箱信件，之後可以移到獨立服務去處理
+    email_backend.send_mail(token, user)
+
+    return "OK"
+
+
+@router.patch("/reset/password/confirm")
+async def reset_user_password_confirm_view(schema: PasswordResetConfirmSchemaIn):
+    try:
+        user = await retrieve_user_by_uidb64(schema.uid)
+
+    except UserDoesNotExistException as exc:
+        raise exc.raise_http_exception()
+
+    if not token_generator.verify_token(user, schema.token):
+        raise PasswordResetInvalidException.raise_http_exception()
+
+    hashed_password = hash_password(schema.new_password)
+    await reset_user_password(user, hashed_password=hashed_password)
 
     return "OK"

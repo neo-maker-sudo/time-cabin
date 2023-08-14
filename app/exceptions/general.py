@@ -43,3 +43,49 @@ class InstanceFieldException(
     detail="排序欄位不存在",
     status_code=status.HTTP_400_BAD_REQUEST,
 ): pass
+
+
+class ChangePasswordInvalidException(
+    HTTPBase,
+    detail="密碼至少需要一個數字、一個大寫、一個小寫",
+    status_code=status.HTTP_400_BAD_REQUEST,        
+): pass
+
+
+class ChangePasswordNotMatchException(
+    HTTPBase,
+    detail="密碼與確認密碼不符合",
+    status_code=status.HTTP_400_BAD_REQUEST,
+): pass
+
+
+class InvalidAlgorithm(ValueError):
+    """Algorithm is not supported by hashlib."""
+    pass
+
+
+class EmailEncryptSetupException(ValueError):
+    def __init__(self, *args: object) -> None:
+        self.message = "EMAIL_USE_TLS 與 EMAIL_USE_SSL 是互斥的，只需要設定其中一個為 True"
+        super().__init__(*args)
+
+
+class ChangePasswordEqualException(
+    HTTPBase,
+    detail="舊密碼與新密碼不能一樣",
+    status_code=status.HTTP_400_BAD_REQUEST,    
+): pass
+
+
+class PasswordEmptyException(
+    HTTPBase,
+    detail="密碼不能為空",
+    status_code=status.HTTP_400_BAD_REQUEST,    
+): pass
+
+
+class PasswordResetInvalidException(
+    HTTPBase,
+    detail="無效或過期的符記",
+    status_code=status.HTTP_401_UNAUTHORIZED,    
+): pass

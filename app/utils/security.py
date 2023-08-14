@@ -1,3 +1,6 @@
+import secrets
+import hashlib
+import hmac
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from fastapi import Depends
@@ -5,7 +8,8 @@ from fastapi.security import HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 from passlib.context import CryptContext
 from app.config import setting
-from app.exceptions.general import JWTUnauthorizeException
+from app.exceptions.general import JWTUnauthorizeException, InvalidAlgorithm
+from app.utils.general import force_bytes
 
 
 security_scheme = HTTPBearer()
@@ -47,3 +51,26 @@ def hash_password(plain_password: str):
 
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
+
+
+def constant_time_compare(val1, val2):
+    """Return True if the two strings are equal, False otherwise."""
+    return secrets.compare_digest(force_bytes(val1), force_bytes(val2))
+
+
+def salted_hmac(hash_value: str, salt: str, /, *, secret=None, algorithm=None):
+    salt_bytes = force_bytes(salt)
+    secrets_bytes = force_bytes(secret)
+    hash_bytes = force_bytes(hash_value)
+
+    try:
+        hasher = getattr(hashlib, algorithm)    
+
+    except AttributeError as e:
+        raise InvalidAlgorithm(
+            "%r is not an algorithm accepted by the hashlib module" % algorithm
+        ) from e
+
+    key = hasher(salt_bytes + secrets_bytes).digest()
+    
+    return hmac.new(key, msg=hash_bytes, digestmod=hasher)

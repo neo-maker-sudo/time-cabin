@@ -1,13 +1,17 @@
 import os
 import boto3
+from string import Template
 from pathlib import Path
 from app.enums.video import VideoDestinationFolderEnum
 
 
 BASE_DIR = Path(__file__).parent.parent.parent
+
 DOCKER_STATUS = os.getenv("DOCKER_STATUS")
 HOST_SCHEME: str = os.getenv("HOST_SCHEME")
 HOST_NAME: str = os.getenv("HOST_NAME")
+FRONT_END_DOMAIN: str = "http://127.0.0.1:3000"
+SITE_NAME: str = "NC 時光小屋"
 
 DATABASE_URL: str = os.getenv("DATABASE_URL")
 DATABASE_MIGRATION_MODELS: list = [
@@ -53,7 +57,7 @@ S3_TRANSFER_CONFIG = boto3.s3.transfer.TransferConfig(
 M3U8_DESTINATION_FOLDER = BASE_DIR / "static" / VideoDestinationFolderEnum.M3U8.value
 MP4_DESTINATION_FOLDER = BASE_DIR / "static" / VideoDestinationFolderEnum.MP4.value
 
-PASSWORD_REGEX = r"((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,12})"
+PASSWORD_REGEX: str = r"((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,12})"
 
 DATE_TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
@@ -69,3 +73,27 @@ STATIC_URL = {
     "avatar": f"{HOST_SCHEME}://{HOST_NAME}/{AVATAR_UPLOAD_TO}",
     "public": f"{HOST_SCHEME}://{HOST_NAME}/{PUBLIC_UPLOAD_TO}",
 }
+
+PASSWORD_RESET_SECRET: str = os.getenv("PASSWORD_RESET_SECRET")
+PASSWORD_RESET_TIMEOUT: int = 60 * 10 # 10 minutes
+PASSWORD_RESET_FRONT_END_ROUTE: str = "password/reset/confirm"
+
+PROJECT_OWNER_EMAIL: str = "neochang@osensetech.com"
+
+EMAIL_HOST: str = "smtp.gmail.com"
+EMAIL_PORT: int = 587
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS: bool = True
+EMAIL_USE_SSL = None
+EMAIL_TIMEOUT: int = 5
+EMAIL_SSL_KEYFILE = None
+EMAIL_SSL_CERTFILE = None
+
+PASSWORD_RESET_EMAIL_SUBJECT: str = '重設密碼信件'
+PASSWORD_RESET_EMAIL_FROM: str = "Neo Chang 的時光小屋網站"
+PASSWORD_RESET_EMAIL_TO: str = "使用者"
+
+PASSWORD_RESET_HTML_TEMPLATE = Template(
+    Path(BASE_DIR / "app" / "templates" / "email" / "password_reset_email.html").read_text(encoding="utf-8")
+)
