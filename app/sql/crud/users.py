@@ -207,3 +207,23 @@ async def reset_user_password(user: Users, hashed_password: str):
 
     except Exception as e:
         raise e
+
+
+async def retrieve_mainpage(
+    page: int, order_field: list
+):
+    try:
+        params = VideoParams(page=page, size=10)
+
+        videos_pagination = await paginate(
+            Videos.filter(type__isnull=False, url__isnull=False).order_by(*order_field), 
+            params=params
+        )
+
+    except DoesNotExist:
+        raise UserDoesNotExistException
+
+    except FieldError:
+        raise InstanceFieldException
+
+    return videos_pagination

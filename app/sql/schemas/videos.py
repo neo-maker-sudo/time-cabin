@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from app.config import setting
 from app.utils.general import convert_datetime_format
-from app.sql.models.video import video_pydantic, video_update_pydantic
+from app.sql.models.video import video_pydantic, video_update_pydantic, mainpage_pydantic
 
 
 class VideoCreateSchemaIn(BaseModel):
@@ -31,3 +31,11 @@ class VideoUpdateSchemaIn(BaseModel):
 
 class VideoUpdateSchemaOut(video_update_pydantic):
     ...
+
+
+class MainPageSchemaOut(BaseModel):
+    items: list[mainpage_pydantic] = []
+    total: int
+    page: int
+    size: int
+    pages: int

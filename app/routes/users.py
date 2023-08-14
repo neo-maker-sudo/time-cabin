@@ -21,6 +21,7 @@ from app.sql.crud.users import (
     create_user_video,
     update_user_video,
     delete_user_video,
+    retrieve_mainpage,
 )
 from app.sql.schemas.users import (
     UserProfileSchemaOut,
@@ -41,6 +42,7 @@ from app.sql.schemas.videos import (
     VideoCreateSchemaOut,
     VideoUpdateSchemaIn,
     VideoUpdateSchemaOut,
+    MainPageSchemaOut,
 )
 from app.utils.cloud import upload_file_to_s3
 from app.utils.email import email_backend
@@ -50,6 +52,13 @@ from app.utils.crypto.token import token_generator
 
 router = APIRouter(prefix="/api", tags=["users"])
 add_pagination(router)
+
+
+@router.get("/mainpage", response_model=MainPageSchemaOut)
+async def retrieve_mainpage_view():
+    videos = await retrieve_mainpage(1, ["-created_at", "-modified_at"])
+
+    return videos
 
 
 @router.get("/profile", response_model=UserProfileSchemaOut)
