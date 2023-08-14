@@ -85,9 +85,10 @@ class EmailBackend:
         finally:
             self.connection = None
 
-    def _write_email_body(self, b64, token):
+    def _write_email_body(self, b64, token, email):
         # 產出 template
         body = setting.PASSWORD_RESET_HTML_TEMPLATE.substitute({
+            "email": email,
             "datetime": retrieve_today_dateime(setting.DATE_TIME_FORMAT),
             "site_name": setting.SITE_NAME,
             "url": f"{setting.FRONT_END_DOMAIN}/{setting.PASSWORD_RESET_FRONT_END_ROUTE}/{b64}/{token}"
@@ -117,7 +118,7 @@ class EmailBackend:
                 if not new_connection or new_connection is None:
                     return
 
-                msg_string = self._write_email_body(b64, token)
+                msg_string = self._write_email_body(b64, token, user.email)
 
                 self.connection.sendmail(
                     setting.PROJECT_OWNER_EMAIL, user.email, msg_string

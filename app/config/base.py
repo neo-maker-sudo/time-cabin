@@ -75,7 +75,7 @@ STATIC_URL = {
 }
 
 PASSWORD_RESET_SECRET: str = os.getenv("PASSWORD_RESET_SECRET")
-PASSWORD_RESET_TIMEOUT: int = 60 * 60 * 24 * 1 # 1 day
+PASSWORD_RESET_TIMEOUT: int = 60 * 10 # 10 minutes
 PASSWORD_RESET_FRONT_END_ROUTE: str = "password/reset/confirm"
 
 PROJECT_OWNER_EMAIL: str = "neochang@osensetech.com"
