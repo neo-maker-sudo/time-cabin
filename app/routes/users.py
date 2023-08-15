@@ -55,8 +55,10 @@ add_pagination(router)
 
 
 @router.get("/mainpage", response_model=MainPageSchemaOut)
-async def retrieve_mainpage_view():
-    videos = await retrieve_mainpage(1, ["-created_at", "-modified_at"])
+async def retrieve_mainpage_view(
+    page: int = Query(ge=1),
+):
+    videos = await retrieve_mainpage(page, ["-created_at", "-modified_at"])
 
     return videos
 
