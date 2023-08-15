@@ -1,3 +1,4 @@
+import sentry_sdk
 from .base import *
 
 
@@ -12,3 +13,10 @@ CORS_METHODS: list = [
     "OPTIONS",
 ]
 TRUSTS_HOSTS = None
+
+SENTRY_DSN: str = os.getenv("SENTRY_DSN")
+
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    traces_sample_rate=1.0,
+)
