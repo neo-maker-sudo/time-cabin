@@ -27,6 +27,16 @@ class Videos(models.Model):
         return self.name
 
 video_pydantic = pydantic_model_creator(Videos, name="video")
+mainpage_pydantic = pydantic_model_creator(
+    Videos,
+    name="mainPage",
+    exclude=(
+        "user_id",
+        "id",
+        "type"
+        "modified_at",
+    )
+)
 video_update_pydantic = pydantic_model_creator(
     Videos,
     name="videoUpdate",
