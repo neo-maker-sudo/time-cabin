@@ -68,9 +68,9 @@ async def create_user(create_object: dict):
     try:
         user = await Users.create(**create_object)
 
-    except IntegrityError as exc:
-        if exc.args[0].__class__.__name__ == UniqueViolationError.__name__:
-            raise UserUniqueConstraintException
+    # except IntegrityError as exc:
+    #     if exc.args[0].__class__.__name__ == UniqueViolationError.__name__:
+    #         raise UserUniqueConstraintException
 
     except Exception as e:
         raise e
