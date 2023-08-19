@@ -4,7 +4,7 @@ from app.utils.general import (
     integer_to_base36,
     base36_to_integer,
 )
-from app.utils.security import (
+from app.utils.auth.security import (
     salted_hmac,
     constant_time_compare
 )

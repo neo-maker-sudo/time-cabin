@@ -5,7 +5,7 @@ from app.exceptions.videos import VideoFileExtensionException
 from app.enums.users import AvatarTypeEnum
 from app.enums.video import VideoTypeEnum
 from app.utils.general import validate_avatar_size
-from app.utils.security import verify_access_token
+from app.utils.auth.security import verify_access_token
 
 
 def verify_video_extension(

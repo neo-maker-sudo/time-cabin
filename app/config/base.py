@@ -97,3 +97,10 @@ PASSWORD_RESET_EMAIL_TO: str = "使用者"
 PASSWORD_RESET_HTML_TEMPLATE = Template(
     Path(BASE_DIR / "app" / "templates" / "email" / "password_reset_email.html").read_text(encoding="utf-8")
 )
+
+AUTHY_APPLICATION_NAME: str = os.getenv("AUTHY_APPLICATION_NAME")
+AUTHY_APPLICATION_ID: str = os.getenv("AUTHY_APPLICATION_ID")
+AUTHY_PRODUCTION_API_KEY: str = os.getenv("AUTHY_PRODUCTION_API_KEY")
+AUTHY_QRCODE_JWT_TIMEDELTA: int = os.getenv("AUTHY_QRCODE_JWT_TIMEDELTA")
+AUTHY_TOKEN_LENGTH: int = 8
+AUTHY_TOKEN_REGEX: str = "[0-9]{8}"
