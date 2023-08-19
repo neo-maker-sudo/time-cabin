@@ -18,7 +18,7 @@ from app.sql.crud.video import (
 )
 from app.utils.cloud import upload_to_s3
 from app.utils.general import download_upload_file, save_tmp_folder
-from app.utils.security import verify_access_token
+from app.utils.auth.security import verify_access_token
 from app.utils.video import mp4_to_m3u8
 
 

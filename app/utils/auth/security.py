@@ -1,12 +1,17 @@
+import base64
 import secrets
 import hashlib
 import hmac
 from datetime import datetime, timedelta
+from time import time
+from io import BytesIO
 from jose import JWTError, jwt
 from fastapi import Depends
 from fastapi.security import HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 from passlib.context import CryptContext
+import qrcode
+from qrcode.image.pure import PyPNGImage
 from app.config import setting
 from app.exceptions.general import JWTUnauthorizeException, InvalidAlgorithm
 from app.utils.general import force_bytes
@@ -74,3 +79,36 @@ def salted_hmac(hash_value: str, salt: str, /, *, secret=None, algorithm=None):
     key = hasher(salt_bytes + secrets_bytes).digest()
     
     return hmac.new(key, msg=hash_bytes, digestmod=hasher)
+
+
+def generate_2fa_jwt(user_id: int):
+    epoch_now = time()
+
+    payload = {
+        "iss": setting.AUTHY_APPLICATION_NAME,
+        "iat": epoch_now,
+        "exp": epoch_now + setting.AUTHY_QRCODE_JWT_TIMEDELTA,
+        "context": {
+            "custom_user_id": user_id,
+            "authy_app_id": setting.AUTHY_APPLICATION_ID
+        }
+    }
+
+    return jwt.encode(payload, setting.AUTHY_PRODUCTION_API_KEY)
+
+
+def generate_2fa_qrcode(user_id, /, *, transfer_base64: bool = False) -> str:
+    jwt = generate_2fa_jwt(user_id)
+    
+    qr =  qrcode.make(
+        f"authy://account?token={jwt}",
+        image_factory=PyPNGImage
+    )
+
+    if not transfer_base64:
+        return qr
+
+    buffer = BytesIO()
+    qr.save(buffer)
+
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
