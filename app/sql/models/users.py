@@ -6,7 +6,7 @@ from .general import FileField
 
 
 class Users(models.Model):
-    id = fields.IntField(pk=True)
+    id = fields.UUIDField(pk=True)
     email = fields.CharField(max_length=setting.USER_EMAIL_FIELD_MAX_LENGTH, unique=True, null=False)
     nickname = fields.CharField(max_length=setting.USER_NICKNAME_FIELD_MAX_LENGTH, null=True)
     active = fields.BooleanField(default=True)
@@ -19,6 +19,7 @@ class Users(models.Model):
     modified_at = fields.DatetimeField(auto_now=True)
 
     videos: fields.ReverseRelation["Videos"]
+    authy: fields.ReverseRelation["Authy"]
 
     async def _pre_save(self, using_db, update_fields):
         if self.avatar is None:
@@ -34,6 +35,14 @@ class Users(models.Model):
 
     class PydanticMeta:
         exclude = ["password"]
+
+
+class Authy(models.Model):
+    authy_id = fields.IntField()
+    user: fields.OneToOneRelation[Users] = fields.OneToOneField(
+        "models.Users", on_delete=fields.CASCADE, related_name="authy"
+    )
+
 
 
 users_pydantic = pydantic_model_creator(Users, name="users")
