@@ -1,13 +1,14 @@
 from asyncpg.exceptions import UniqueViolationError
 from tortoise.transactions import atomic
 from tortoise.exceptions import IntegrityError, DoesNotExist, FieldError
+from tortoise.query_utils import Prefetch
 from fastapi_pagination.ext.tortoise import paginate
 from app.utils.general import urlsave_base64_decode
 from app.utils.pagination import VideoParams
 from app.exceptions.general import InstanceFieldException
 from app.exceptions.users import UserUniqueConstraintException, UserDoesNotExistException
 from app.exceptions.videos import VideoNameFieldMaxLengthException, VideoDoesNotExistException
-from app.sql.models.users import Users, users_pydantic
+from app.sql.models.users import Users, Authy, users_pydantic
 from app.sql.models.video import Videos
 
 
@@ -68,9 +69,9 @@ async def create_user(create_object: dict):
     try:
         user = await Users.create(**create_object)
 
-    except IntegrityError as exc:
-        if exc.args[0].__class__.__name__ == UniqueViolationError.__name__:
-            raise UserUniqueConstraintException
+    # except IntegrityError as exc:
+    #     if exc.args[0].__class__.__name__ == UniqueViolationError.__name__:
+    #         raise UserUniqueConstraintException
 
     except Exception as e:
         raise e
@@ -227,3 +228,15 @@ async def retrieve_mainpage(
         raise InstanceFieldException
 
     return videos_pagination
+
+
+async def retrieve_user_with_authy(user_id: int):
+    try:
+        user = await Users.get(id=user_id).prefetch_related(
+            Prefetch("authy", queryset=Authy.filter())
+        )
+
+    except DoesNotExist:
+        raise UserDoesNotExistException
+
+    return user

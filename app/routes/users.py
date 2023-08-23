@@ -46,7 +46,7 @@ from app.sql.schemas.videos import (
 )
 from app.utils.cloud import upload_file_to_s3
 from app.utils.email import email_backend
-from app.utils.security import hash_password, verify_access_token
+from app.utils.auth.security import hash_password, verify_access_token
 from app.utils.crypto.token import token_generator
 
 

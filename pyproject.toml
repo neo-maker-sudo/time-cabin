@@ -17,6 +17,9 @@ tzdata = "^2023.3"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 fastapi-pagination = "^0.12.6"
+sentry-sdk = {extras = ["fastapi"], version = "^1.29.2"}
+authy = "^2.2.6"
+qrcode = "^7.4.2"
 
 
 [tool.poetry.group.dev.dependencies]
