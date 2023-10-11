@@ -6,11 +6,11 @@ from app.sql.models.video import video_pydantic, video_update_pydantic, mainpage
 
 
 class VideoCreateSchemaIn(BaseModel):
-    name: str
+    label: dict
     information: str = Field(default="")
     url: str = Field(None)
     type: str = Field(None)
-    user_id: int
+    user_id: str
 
 
 class VideoCreateSchemaOut(video_pydantic):
@@ -25,12 +25,16 @@ class VideoCreateSchemaOut(video_pydantic):
 
 
 class VideoUpdateSchemaIn(BaseModel):
-    name: str = Field(..., min_length=setting.VIDEO_NAME_FIELD_MIN_LENGTH, max_length=setting.VIDEO_NAME_FIELD_MAX_LENGTH)
+    label: list[str] = Field(
+        None,
+        max_length=setting.VIDEO_LABEL_FIELD_VIDEO_TAG_MAX_LENGTH,
+    )
     information: str = Field(...)
 
 
-class VideoUpdateSchemaOut(video_update_pydantic):
-    ...
+class VideoUpdateSchemaOut(BaseModel):
+    label: list[str] = []
+    information: str
 
 
 class MainPageSchemaOut(BaseModel):

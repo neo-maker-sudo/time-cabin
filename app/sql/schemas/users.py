@@ -79,14 +79,12 @@ class UserUpdateSchemaOut(user_update_pydantic):
 class UserVideoCreateFormSchema:
     def __init__(
         self,
-        name: str = Form(
-            ...,
-            min_length=setting.VIDEO_NAME_FIELD_MIN_LENGTH,
-            max_length=setting.VIDEO_NAME_FIELD_MAX_LENGTH
+        video_tags: list[str] = Form(
+            max_length=setting.VIDEO_LABEL_FIELD_VIDEO_TAG_MAX_LENGTH,
         ),
         information: str = Form()
     ):
-        self.name = name
+        self.video_tags = video_tags
         self.information = information
 
 
@@ -108,7 +106,7 @@ class UserVideosSchemaOut(users_videos_pydantic):
 
 
 class UserVideoSchemaOut(BaseModel):
-    name: str
+    tags: list[str] = []
     information: str
     url: str
 

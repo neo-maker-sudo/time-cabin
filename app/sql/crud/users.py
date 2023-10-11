@@ -1,8 +1,11 @@
+import orjson
 from asyncpg.exceptions import UniqueViolationError
+from tortoise.connection import connections
 from tortoise.transactions import atomic
 from tortoise.exceptions import IntegrityError, DoesNotExist, FieldError
 from tortoise.query_utils import Prefetch
 from fastapi_pagination.ext.tortoise import paginate
+from app.config import setting
 from app.utils.general import urlsave_base64_decode
 from app.utils.pagination import VideoParams
 from app.exceptions.general import InstanceFieldException
@@ -69,9 +72,9 @@ async def create_user(create_object: dict):
     try:
         user = await Users.create(**create_object)
 
-    # except IntegrityError as exc:
-    #     if exc.args[0].__class__.__name__ == UniqueViolationError.__name__:
-    #         raise UserUniqueConstraintException
+    except IntegrityError as exc:
+        if exc.args[0].__class__.__name__ == UniqueViolationError.__name__:
+            raise UserUniqueConstraintException
 
     except Exception as e:
         raise e
@@ -149,11 +152,28 @@ async def insert_user_video(video_id: int, user_id: int, update_object: dict):
 
 @atomic()
 async def update_user_video(video_id: int, user_id: int, update_object: dict):
+    conn = connections.get(setting.DATABASE_CONNECTION)
+
     try:
-        video = await Videos.get(id=video_id, user_id=user_id)
-        video.name = update_object["name"]
-        video.information = update_object["information"]
-        await video.save(update_fields=["name", "information", "modified_at"])
+        command = """
+            UPDATE videos
+            SET
+                modified_at = now(),
+                information = $3,
+                label = jsonb_set(label, '{tags}', $4, true)
+            WHERE id = $1 AND user_id = $2
+            RETURNING *;
+        """
+
+        qs = await conn.execute_query_dict(
+            command,
+            [
+                video_id,
+                user_id,
+                update_object["information"],
+                orjson.dumps(list(set(update_object["label"]))).decode("utf-8"),
+            ]
+        )
 
     except VideoNameFieldMaxLengthException:
         raise VideoNameFieldMaxLengthException
@@ -164,7 +184,10 @@ async def update_user_video(video_id: int, user_id: int, update_object: dict):
     except Exception as e:
         raise e
 
-    return video
+    return {
+        "information": qs[0]["information"],
+        "label": orjson.loads(qs[0]["label"])["tags"]
+    }
 
 
 @atomic()
@@ -208,26 +231,6 @@ async def reset_user_password(user: Users, hashed_password: str):
 
     except Exception as e:
         raise e
-
-
-async def retrieve_mainpage(
-    page: int, order_field: list
-):
-    try:
-        params = VideoParams(page=page, size=10)
-
-        videos_pagination = await paginate(
-            Videos.filter(type__isnull=False, url__isnull=False).order_by(*order_field), 
-            params=params
-        )
-
-    except DoesNotExist:
-        raise UserDoesNotExistException
-
-    except FieldError:
-        raise InstanceFieldException
-
-    return videos_pagination
 
 
 async def retrieve_user_with_authy(user_id: int):
