@@ -89,3 +89,10 @@ class PasswordResetInvalidException(
     detail="無效或過期的符記",
     status_code=status.HTTP_401_UNAUTHORIZED,    
 ): pass
+
+
+class SearchVideosOperationException(
+    HTTPBase,
+    detail="無效查詢",
+    status_code=status.HTTP_400_BAD_REQUEST,    
+): pass

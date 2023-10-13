@@ -2,7 +2,6 @@ from tortoise import fields, models
 from tortoise.contrib.pydantic import pydantic_model_creator
 from app.config import setting
 from .video import Videos
-from .general import FileField
 
 
 class Users(models.Model):
@@ -12,7 +11,7 @@ class Users(models.Model):
     active = fields.BooleanField(default=True)
     start_time = fields.DatetimeField(null=True)
     end_time = fields.DatetimeField(null=True)
-    avatar = FileField(upload_to=setting.AVATAR_UPLOAD_TO, null=True)
+    avatar = fields.CharField(max_length=255, null=True)
     password = fields.CharField(max_length=setting.USER_PASSWORD_FIELD_MAX_LENGTH, null=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     last_login = fields.DatetimeField(auto_now=True)
@@ -23,7 +22,7 @@ class Users(models.Model):
 
     async def _pre_save(self, using_db, update_fields):
         if self.avatar is None:
-            self.avatar = "{}{}".format(
+            self.avatar = "{}/{}".format(
                 setting.STATIC_URL["public"],
                 "default.png"
             )

@@ -7,7 +7,7 @@ from tortoise.models import Model
 from starlette.datastructures import UploadFile
 from app.config import setting
 
-
+# deprecated!!! 使用 AWS S3 儲存 user avatar 了，不需要存在地端
 class FileField(fields.TextField):
     def __init__(self, upload_to: str, **kwargs) -> None:
         super().__init__(**kwargs)
