@@ -28,16 +28,24 @@ def download_s3_file(source: str, destination: str) -> None:
         raise e
 
 
-def upload_file_to_s3(upload_file, user_id: int) -> str:
-    filename_folder = Path(upload_file.filename).stem
-    
+def upload_file_to_s3(upload_file, user_id: int, prefix: str, nested_sub_folder: bool = True) -> str:
     try:
-        setting.S3_CLIENT.upload_fileobj(
-            upload_file.file,
-            setting.S3_BUCKET_NAME,
-            f"{user_id}/{filename_folder}/{upload_file.filename}",
-            Config=setting.S3_TRANSFER_CONFIG
-        )
+        if nested_sub_folder:
+            filename_folder = Path(upload_file.filename).stem
+            setting.S3_CLIENT.upload_fileobj(
+                upload_file.file,
+                setting.S3_BUCKET_NAME,
+                f"{prefix}/{user_id}/{filename_folder}/{upload_file.filename}",
+                Config=setting.S3_TRANSFER_CONFIG
+            )
+
+        else:
+            setting.S3_CLIENT.upload_fileobj(
+                upload_file.file,
+                setting.S3_BUCKET_NAME,
+                f"{prefix}/{user_id}/{upload_file.filename}",
+                Config=setting.S3_TRANSFER_CONFIG
+            )
 
     except ParamValidationError as e:
         raise AWSParamValidationException
@@ -51,7 +59,10 @@ def upload_file_to_s3(upload_file, user_id: int) -> str:
     except Exception as e:
         raise e
 
-    return filename_folder
+    if nested_sub_folder:
+        return filename_folder
+
+    return f"{setting.STATIC_URL[prefix]}/{user_id}/{upload_file.filename}"
 
 
 def upload_to_s3(source: str, cloud_folder: str, bucket: str) -> None:

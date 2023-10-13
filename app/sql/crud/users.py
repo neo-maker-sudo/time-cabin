@@ -83,10 +83,10 @@ async def create_user(create_object: dict):
 
 
 @atomic()
-async def update_user_avatar(user_id: int, update_object: dict):
+async def update_user_avatar(user_id: int, avatar_url: str):
     try:
         user = await Users.get(id=user_id)
-        user.avatar = update_object["avatar"]
+        user.avatar = avatar_url
         await user.save(update_fields=["avatar", "modified_at"])
 
     except DoesNotExist:

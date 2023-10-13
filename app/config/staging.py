@@ -12,7 +12,9 @@ CORS_METHODS: list = [
     "DELETE",
     "OPTIONS",
 ]
-TRUSTS_HOSTS = None
+TRUSTS_HOSTS = [
+    "*.neochang.com"
+]
 
 SENTRY_DSN: str = os.getenv("SENTRY_DSN")
 

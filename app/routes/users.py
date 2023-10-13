@@ -81,10 +81,19 @@ async def create_user_view(schema: UserCreateSchemaIn):
 async def update_user_avatar_view(
     depends_object: dict = Depends(verify_avatar_entension),
 ):
+    # 上傳照片到 aws s3
+    avatar_url = upload_file_to_s3(
+        depends_object["upload_file"],
+        depends_object["user_id"],
+        prefix="avatars",
+        nested_sub_folder=False,
+    )
+
+    # 更新 avatar link 到 db
     try:
         user = await update_user_avatar(
             depends_object["user_id"],
-            update_object={"avatar": depends_object["upload_file"]},
+            avatar_url=avatar_url,
         )
 
     except UserDoesNotExistException as exc:
@@ -166,6 +175,7 @@ async def create_user_video_view(
     filename_folder = upload_file_to_s3(
         upload_file=upload_file,
         user_id=user_id,
+        prefix="videos"
     )
 
     # save into database

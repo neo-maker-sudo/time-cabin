@@ -2,25 +2,16 @@ version: '3.9'
 
 services:
   nginx:
-    image: jonasal/nginx-certbot:3
+    image: nginx:1.23.4
     container_name: m3u8_proxy
     restart: unless-stopped
-    environment:
-      - CERTBOT_EMAIL=${CERTBOT_EMAIL}
-      - USE_LOCAL_CA=${USE_LOCAL_CA} # if using development, need to set 1, otherwise 0
     ports:
       - target: 80
         published: 80
         protocol: tcp
         mode: host
-      - target: 443
-        published: 443
-        protocol: tcp
-        mode: host
     volumes:
-      - ./letsencrypt:/etc/letsencrypt
-      - ./docker/nginx/conf.d:/etc/nginx/user_conf.d:ro
-      - ./share:/etc/nginx/share
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       app: 
         condition: service_started
@@ -29,13 +20,10 @@ services:
     build:
       context: .
       dockerfile: ./docker/app/Dockerfile
-    container_name: m3u8_app
     restart: always 
     environment:
       - SETTING_MODULE=app.config.staging
       - DOCKER_STATUS=True
-      - HOST_SCHEME=${HOST_SCHEME}
-      - HOST_NAME=${HOST_NAME}
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
       - S3_REGION_NAME=${S3_REGION_NAME}
@@ -45,9 +33,11 @@ services:
       - PASSWORD_RESET_SECRET=${PASSWORD_RESET_SECRET}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - AUTHY_APPLICATION_NAME=${AUTHY_APPLICATION_NAME}
+      - AUTHY_APPLICATION_ID=${AUTHY_APPLICATION_ID}
+      - AUTHY_PRODUCTION_API_KEY=${AUTHY_PRODUCTION_API_KEY}
+      - AUTHY_QRCODE_JWT_TIMEDELTA=${AUTHY_QRCODE_JWT_TIMEDELTA}
 
-    volumes:
-      - ./share/:/home/app/code/static/avatar
     ports:
       - 8000
 

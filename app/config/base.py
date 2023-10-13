@@ -8,8 +8,6 @@ from app.enums.video import VideoDestinationFolderEnum
 BASE_DIR = Path(__file__).parent.parent.parent
 
 DOCKER_STATUS = os.getenv("DOCKER_STATUS")
-HOST_SCHEME: str = os.getenv("HOST_SCHEME")
-HOST_NAME: str = os.getenv("HOST_NAME")
 FRONT_END_DOMAIN: str = "http://127.0.0.1:3000"
 SITE_NAME: str = "NC 時光小屋"
 
@@ -66,13 +64,11 @@ JWT_ALGORITHM: str = "HS256"
 JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
 JWT_EXPIRE_DAYS: int = 2
 
-AVATAR_UPLOAD_TO: str = "static/avatar/"
 AVATAR_MAXIMUM_SIZE: int = 1024 * 1024 * 2
-PUBLIC_UPLOAD_TO: str = "static/public/"
 
 STATIC_URL = {
-    "avatar": f"{HOST_SCHEME}://{HOST_NAME}/{AVATAR_UPLOAD_TO}",
-    "public": f"{HOST_SCHEME}://{HOST_NAME}/{PUBLIC_UPLOAD_TO}",
+    "avatars": f"{S3_BASE_URL}/avatars",
+    "public": f"{S3_BASE_URL}/public",
 }
 
 PASSWORD_RESET_SECRET: str = os.getenv("PASSWORD_RESET_SECRET")
