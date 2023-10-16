@@ -15,6 +15,7 @@ class Users(models.Model):
     password = fields.CharField(max_length=setting.USER_PASSWORD_FIELD_MAX_LENGTH, null=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     last_login = fields.DatetimeField(auto_now=True)
+    email_verified = fields.BooleanField(default=False)
     modified_at = fields.DatetimeField(auto_now=True)
 
     videos: fields.ReverseRelation["Videos"]

@@ -37,12 +37,15 @@ services:
       - AUTHY_APPLICATION_ID=${AUTHY_APPLICATION_ID}
       - AUTHY_PRODUCTION_API_KEY=${AUTHY_PRODUCTION_API_KEY}
       - AUTHY_QRCODE_JWT_TIMEDELTA=${AUTHY_QRCODE_JWT_TIMEDELTA}
+      - SENTRY_DSN={SENTRY_DSN}
+      - REDIS_URL=${REDIS_URL}
 
     ports:
       - 8000
 
   postgres:
     image: postgres:15
+    user: "${UID}:${GID}"
     container_name: m3u8_fb
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -57,5 +60,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: bitnami/redis:6.2.13
+    environment:
+      - ALLOW_EMPTY_PASSWORD=false
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    expose:
+      - 6379
+    volumes:
+      - redis_data:/bitnami/redis/data
+
 volumes:
   postgres_data:
+  redis_data:

@@ -7,8 +7,9 @@ from tortoise.contrib.fastapi import register_tortoise
 from app.config import setting
 from app.routes import video, users, auth, mainpage
 from app.utils.general import create_videos_folder
+from app.utils.redis import connect_redis
 
-app = FastAPI(docs_url=None, redoc_url=None)
+app = FastAPI(docs_url=setting.DOCS_URL, redoc_url=None)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
@@ -39,6 +40,13 @@ async def application_startup_event():
         setting.M3U8_DESTINATION_FOLDER,
         setting.MP4_DESTINATION_FOLDER,
     ])
+
+    redis = await connect_redis()
+    app.state.redis = redis
+
+@app.on_event("shutdown")
+async def application_shutdown_event():
+    await app.state.redis.close()
 
 @app.get("/")
 def home_page_view(request: Request):

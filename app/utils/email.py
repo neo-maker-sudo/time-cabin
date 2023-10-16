@@ -1,5 +1,6 @@
 import ssl
 import smtplib
+import random
 import threading
 from email.mime.text import MIMEText
 from app.config import setting
@@ -85,7 +86,7 @@ class EmailBackend:
         finally:
             self.connection = None
 
-    def _write_email_body(self, b64, token, email):
+    def _write_reset_password_email_body(self, b64, token, email):
         # 產出 template
         body = setting.PASSWORD_RESET_HTML_TEMPLATE.substitute({
             "email": email,
@@ -101,12 +102,12 @@ class EmailBackend:
         )
 
         msg['Subject'] = setting.PASSWORD_RESET_EMAIL_SUBJECT
-        msg['From'] = setting.PASSWORD_RESET_EMAIL_FROM
-        msg['To'] = setting.PASSWORD_RESET_EMAIL_TO
+        msg['From'] = setting.SEND_EMAIL_FROM
+        msg['To'] = setting.SEND_EMAIL_TO
 
         return msg.as_string()
 
-    def send_mail(self, token, user):
+    def send_reset_password_mail(self, token, user):
         b64 = urlsafe_base64_encode(user.id)
 
         new_connection = None
@@ -118,7 +119,7 @@ class EmailBackend:
                 if not new_connection or new_connection is None:
                     return
 
-                msg_string = self._write_email_body(b64, token, user.email)
+                msg_string = self._write_reset_password_email_body(b64, token, user.email)
 
                 self.connection.sendmail(
                     setting.PROJECT_OWNER_EMAIL, user.email, msg_string
@@ -127,6 +128,56 @@ class EmailBackend:
             finally:
                 if new_connection:
                     self.close()
+
+    def _write_user_verification_email_body(self, email, code):
+        body = setting.USER_VERIFICATION_HTML_TEMPLATE.substitute({
+            "email": email,
+            "datetime": retrieve_today_dateime(setting.DATE_TIME_FORMAT),
+            "site_name": setting.SITE_NAME,
+            "code": code
+        })
+
+        msg = MIMEText(
+            body,
+            self._sub_type,
+            self._charset,
+        )
+
+        msg['Subject'] = setting.USER_VERIFICATION_EMAIL_SUBJECT
+        msg['From'] = setting.SEND_EMAIL_FROM
+        msg['To'] = setting.SEND_EMAIL_TO
+
+        return msg.as_string()
+
+    def send_user_verification_mail(self, user, code):
+        new_connection = None
+
+        with self._lock:
+            try:
+                new_connection = self.open()
+
+                if not new_connection or new_connection is None:
+                    return
+
+                msg_string = self._write_user_verification_email_body(user.email, code)
+
+                self.connection.sendmail(
+                    setting.PROJECT_OWNER_EMAIL, user.email, msg_string
+                )
+
+            finally:
+                if new_connection:
+                    self.close()
+
+    def generate_otp_code(self, length: int = setting.USER_VERIFICATION_EMAIL_CODE_LENGTH):
+        try:
+            otp_code = random.randrange(int("1" * length), int("9" * length))
+
+        # cause ValueError if argument isn't integer or range problem, Ex:1,1
+        except Exception as e:
+            raise e
+
+        return otp_code
 
 
 email_backend = EmailBackend()

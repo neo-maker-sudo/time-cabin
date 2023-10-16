@@ -1,8 +1,8 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, UploadFile, status, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, UploadFile, status, Query, BackgroundTasks, Request
 from fastapi_pagination import add_pagination
 from app.backgrounds.videos import process_transcoding
-from app.dependencies import verify_avatar_entension, verify_video_extension
+from app.dependencies import verify_avatar_entension, verify_video_extension, verify_email_verification_code
 from app.exceptions.general import InstanceFieldException, PasswordResetInvalidException
 from app.exceptions.users import UserUniqueConstraintException, UserDoesNotExistException
 from app.exceptions.videos import VideoNameFieldMaxLengthException, VideoDoesNotExistException
@@ -11,6 +11,7 @@ from app.sql.crud.users import (
     update_user,
     update_user_avatar,
     update_user_password,
+    update_user_email_verified,
     reset_user_password,
     retrieve_user,
     retrieve_user_by_email,
@@ -44,6 +45,7 @@ from app.sql.schemas.videos import (
 )
 from app.utils.cloud import upload_file_to_s3
 from app.utils.email import email_backend
+from app.utils.redis import set_email_verify_otp_into_redis, set_email_verify_otp_expired
 from app.utils.auth.security import hash_password, verify_access_token
 from app.utils.crypto.token import token_generator
 
@@ -260,7 +262,7 @@ async def reset_user_password_view(schema: PassowrdResetSchemaIn):
     # 生成 token
     token = token_generator.make_token(user)
     # 發送信箱信件，之後可以移到獨立服務去處理
-    email_backend.send_mail(token, user)
+    email_backend.send_reset_password_mail(token, user)
 
     return "OK"
 
@@ -279,4 +281,62 @@ async def reset_user_password_confirm_view(schema: PasswordResetConfirmSchemaIn)
     hashed_password = hash_password(schema.new_password)
     await reset_user_password(user, hashed_password=hashed_password)
 
+    return "OK"
+
+
+@router.get("/email-vefification", status_code=status.HTTP_200_OK)
+async def send_email_verification(
+    request: Request,
+    user_id: int = Depends(verify_access_token)
+):
+    # 驗證使用者是否存在
+    try:
+        user = await retrieve_user(user_id=user_id)
+
+    except UserDoesNotExistException as exc:
+        exc.raise_http_exception()
+
+    # 確認使用者是否驗證過
+    if not user.email_verified:
+        # 產生 OTP 驗證碼
+        code = email_backend.generate_otp_code()
+
+        # 存入 Redis
+        await set_email_verify_otp_into_redis(
+            request.app.state.redis,
+            user_id=user_id,
+            value=code,
+        )
+
+        # 如果沒驗證過發送驗證信
+        email_backend.send_user_verification_mail(user, code)
+
+    else:
+        return {
+            "send_mail": None
+        }
+
+    return {
+        "send_mail": True
+    }
+
+
+@router.patch("/email-verification", status_code=status.HTTP_200_OK)
+async def send_email_verification(
+    request: Request,
+    user_id: str = Depends(verify_email_verification_code),
+):
+    # 修改使用者 db 狀態
+    try:
+        await update_user_email_verified(user_id)
+
+    except UserDoesNotExistException as exc:
+        raise exc.raise_http_exception()
+
+    await set_email_verify_otp_expired(
+        request.app.state.redis,
+        user_id=user_id,
+    )
+
+    # 轉導到首頁
     return "OK"

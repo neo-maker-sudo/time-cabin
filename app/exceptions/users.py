@@ -28,3 +28,16 @@ class UserDoesNotExistException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail="使用者不存在",
 ): pass
+
+
+class UserOTPCodeIncorrectException(
+    HTTPBase,
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="驗證碼錯誤"
+): pass
+
+class UserOTPCodeMisFormatException(
+    HTTPBase,
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="驗證碼格式錯誤"
+): pass
