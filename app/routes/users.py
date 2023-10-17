@@ -2,7 +2,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, UploadFile, status, Query, BackgroundTasks, Request
 from fastapi_pagination import add_pagination
 from app.backgrounds.videos import process_transcoding
-from app.dependencies import verify_avatar_entension, verify_video_extension, verify_email_verification_code
+from app.dependencies import (
+    verify_avatar_extension,
+    verify_video_extension,
+    verify_email_verification_code,
+    verify_user_email_verified,
+)
 from app.exceptions.general import InstanceFieldException, PasswordResetInvalidException
 from app.exceptions.users import UserUniqueConstraintException, UserDoesNotExistException
 from app.exceptions.videos import VideoNameFieldMaxLengthException, VideoDoesNotExistException
@@ -81,7 +86,7 @@ async def create_user_view(schema: UserCreateSchemaIn):
 
 @router.patch("/update/user/avatar", response_model=UserUpdateAvatarSchemaOut)
 async def update_user_avatar_view(
-    depends_object: dict = Depends(verify_avatar_entension),
+    depends_object: dict = Depends(verify_avatar_extension),
 ):
     # 上傳照片到 aws s3
     avatar_url = upload_file_to_s3(
@@ -172,11 +177,11 @@ async def create_user_video_view(
     background_task: BackgroundTasks,
     upload_file: UploadFile = Depends(verify_video_extension),
     form_data: UserVideoCreateFormSchema = Depends(),
-    user_id: int = Depends(verify_access_token),
+    user = Depends(verify_user_email_verified),
 ):
     filename_folder = upload_file_to_s3(
         upload_file=upload_file,
-        user_id=user_id,
+        user_id=user.user_id,
         prefix="videos"
     )
 
@@ -186,18 +191,18 @@ async def create_user_video_view(
             "tags": list(set(form_data.video_tags[0].split(",")))
         },
         information=form_data.information,
-        user_id=user_id,
+        user_id=user.user_id,
     )
 
     video = await create_user_video(create_object=schema.dict())
 
     background_task.add_task(
         process_transcoding,
-        folder=str(user_id),
+        folder=str(user.user_id),
         filename=upload_file.filename,
         filename_folder=filename_folder,
         video_id=video.id,
-        user_id=user_id,
+        user_id=user.user_id,
     )
 
     return video
@@ -207,10 +212,10 @@ async def create_user_video_view(
 async def update_profile_video_view(
     video_id: int,
     schema: VideoUpdateSchemaIn,
-    user_id: int = Depends(verify_access_token),
+    user = Depends(verify_user_email_verified),
 ):
     try:
-        video = await update_user_video(video_id, user_id, update_object=schema.dict())
+        video = await update_user_video(video_id, user.user_id, update_object=schema.dict())
 
     except VideoNameFieldMaxLengthException as exc:
         raise exc.raise_http_exception()
@@ -224,10 +229,10 @@ async def update_profile_video_view(
 @router.delete("/profile/delete/{video_id}/video", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_profile_video_view(
     video_id: int,
-    user_id: int = Depends(verify_access_token),
+    user = Depends(verify_user_email_verified),
 ):
     try:
-        await delete_user_video(video_id=video_id, user_id=user_id)
+        await delete_user_video(video_id=video_id, user_id=user.user_id)
 
     except VideoDoesNotExistException as exc:
         raise exc.raise_http_exception()
@@ -252,7 +257,6 @@ async def change_user_password_view(
 
 @router.patch("/reset/password")
 async def reset_user_password_view(schema: PassowrdResetSchemaIn):
-    # 查詢 email
     try:
         user = await retrieve_user_by_email(schema.email)
 
@@ -284,7 +288,7 @@ async def reset_user_password_confirm_view(schema: PasswordResetConfirmSchemaIn)
     return "OK"
 
 
-@router.get("/email-vefification", status_code=status.HTTP_200_OK)
+@router.get("/email-verification", status_code=status.HTTP_200_OK)
 async def send_email_verification(
     request: Request,
     user_id: int = Depends(verify_access_token)

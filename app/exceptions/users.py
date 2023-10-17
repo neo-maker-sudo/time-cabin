@@ -41,3 +41,10 @@ class UserOTPCodeMisFormatException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="驗證碼格式錯誤"
 ): pass
+
+
+class UserEmailNotVerifyException(
+    HTTPBase,
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="使用者尚未驗證信箱"
+): pass

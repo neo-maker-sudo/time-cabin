@@ -207,10 +207,8 @@ async def update_user_video(video_id: int, user_id: int, update_object: dict):
 @atomic()
 async def delete_user_video(video_id: int, user_id: int):
     try:
-        deleted_count= await Videos.filter(id=video_id, user_id=user_id).delete()
-
-        if not deleted_count:
-            raise DoesNotExist
+        video= await Videos.get(id=video_id, user_id=user_id)
+        await video.delete()
 
     except DoesNotExist:
         raise VideoDoesNotExistException

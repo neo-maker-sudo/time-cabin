@@ -5,6 +5,8 @@ from app.exceptions.users import (
     AvatarFileSizeOverException,
     UserOTPCodeIncorrectException,
     UserOTPCodeMisFormatException,
+    UserDoesNotExistException,
+    UserEmailNotVerifyException,
 )
 from app.exceptions.videos import VideoFileExtensionException
 from app.enums.users import AvatarTypeEnum
@@ -12,6 +14,7 @@ from app.enums.video import VideoTypeEnum
 from app.utils.general import validate_avatar_size
 from app.utils.redis import get_email_verify_otp_from_redis
 from app.utils.auth.security import verify_access_token
+from app.sql.crud.users import retrieve_user
 
 
 def verify_video_extension(
@@ -23,7 +26,7 @@ def verify_video_extension(
     return upload_file
 
 
-def verify_avatar_entension(
+def verify_avatar_extension(
     upload_file: UploadFile = File(...),
     user_id: int = Depends(verify_access_token),
 
@@ -64,3 +67,18 @@ async def verify_email_verification_code(
         raise UserOTPCodeIncorrectException.raise_http_exception()
 
     return user_id
+
+
+async def verify_user_email_verified(
+    user_id: str = Depends(verify_access_token),
+):
+    try:
+        user = await retrieve_user(user_id=user_id)
+
+    except UserDoesNotExistException:
+        raise UserDoesNotExistException.raise_http_exception()
+
+    if not user.email_verified:
+        raise UserEmailNotVerifyException.raise_http_exception()
+
+    return user
