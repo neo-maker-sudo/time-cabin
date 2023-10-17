@@ -146,5 +146,5 @@ def urlsave_base64_decode(string: str):
         raise ValueError(e)
 
 
-def retrieve_today_dateime(format: str):
+def retrieve_today_datetime(format: str):
     return datetime.today().strftime(format)

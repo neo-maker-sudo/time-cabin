@@ -2,13 +2,14 @@ import ssl
 import smtplib
 import random
 import threading
+from abc import ABCMeta, abstractmethod
 from email.mime.text import MIMEText
 from app.config import setting
 from app.exceptions.general import EmailEncryptSetupException
-from app.utils.general import urlsafe_base64_encode, retrieve_today_dateime
+from app.utils.general import urlsafe_base64_encode, retrieve_today_datetime
 
 
-class EmailBackend:
+class EmailBackend(object, metaclass=ABCMeta):
     _sub_type = "html"
     _charset = "utf-8"
 
@@ -86,15 +87,29 @@ class EmailBackend:
         finally:
             self.connection = None
 
-    def _write_reset_password_email_body(self, b64, token, email):
-        # 產出 template
-        body = setting.PASSWORD_RESET_HTML_TEMPLATE.substitute({
+    @abstractmethod
+    def make_html_template(): pass
+
+    @abstractmethod
+    def write_mime_text(): pass
+
+    @abstractmethod
+    def write_email_body(): pass
+
+    @abstractmethod
+    def send_email(): pass
+
+
+class ResetPasswordEmailBackend(EmailBackend):
+    def make_html_template(self, email, b64, token):
+        return setting.PASSWORD_RESET_HTML_TEMPLATE.substitute({
             "email": email,
-            "datetime": retrieve_today_dateime(setting.DATE_TIME_FORMAT),
+            "datetime": retrieve_today_datetime(setting.DATE_TIME_FORMAT),
             "site_name": setting.SITE_NAME,
             "url": f"{setting.FRONT_END_DOMAIN}/{setting.PASSWORD_RESET_FRONT_END_ROUTE}/{b64}/{token}"
         })
 
+    def write_mime_text(self, body):
         msg = MIMEText(
             body,
             self._sub_type,
@@ -105,10 +120,16 @@ class EmailBackend:
         msg['From'] = setting.SEND_EMAIL_FROM
         msg['To'] = setting.SEND_EMAIL_TO
 
+        return msg
+
+    def write_email_body(self, email, b64, token):
+        body = self.make_html_template(email, b64, token)
+
+        msg = self.write_mime_text(body)
         return msg.as_string()
 
-    def send_reset_password_mail(self, token, user):
-        b64 = urlsafe_base64_encode(user.id)
+    def send_email(self, token, user_id, email):
+        b64 = urlsafe_base64_encode(user_id)
 
         new_connection = None
 
@@ -119,24 +140,26 @@ class EmailBackend:
                 if not new_connection or new_connection is None:
                     return
 
-                msg_string = self._write_reset_password_email_body(b64, token, user.email)
+                msg_string = self.write_email_body(email, b64, token)
 
                 self.connection.sendmail(
-                    setting.PROJECT_OWNER_EMAIL, user.email, msg_string
+                    setting.PROJECT_OWNER_EMAIL, email, msg_string
                 )
 
             finally:
                 if new_connection:
                     self.close()
 
-    def _write_user_verification_email_body(self, email, code):
-        body = setting.USER_VERIFICATION_HTML_TEMPLATE.substitute({
+class UserVerifyEmailBackend(EmailBackend):
+    def make_html_template(self, email, code):
+        return setting.USER_VERIFICATION_HTML_TEMPLATE.substitute({
             "email": email,
-            "datetime": retrieve_today_dateime(setting.DATE_TIME_FORMAT),
+            "datetime": retrieve_today_datetime(setting.DATE_TIME_FORMAT),
             "site_name": setting.SITE_NAME,
             "code": code
         })
 
+    def write_mime_text(self, body):
         msg = MIMEText(
             body,
             self._sub_type,
@@ -147,9 +170,15 @@ class EmailBackend:
         msg['From'] = setting.SEND_EMAIL_FROM
         msg['To'] = setting.SEND_EMAIL_TO
 
+        return msg
+
+    def write_email_body(self, email, code):
+        body = self.make_html_template(email, code)
+
+        msg = self.write_mime_text(body)
         return msg.as_string()
 
-    def send_user_verification_mail(self, user, code):
+    def send_email(self, email, code):
         new_connection = None
 
         with self._lock:
@@ -159,10 +188,10 @@ class EmailBackend:
                 if not new_connection or new_connection is None:
                     return
 
-                msg_string = self._write_user_verification_email_body(user.email, code)
+                msg_string = self.write_email_body(email, code)
 
                 self.connection.sendmail(
-                    setting.PROJECT_OWNER_EMAIL, user.email, msg_string
+                    setting.PROJECT_OWNER_EMAIL, email, msg_string
                 )
 
             finally:
@@ -179,5 +208,5 @@ class EmailBackend:
 
         return otp_code
 
-
-email_backend = EmailBackend()
+reset_password_email_backend = ResetPasswordEmailBackend()
+user_verify_email_backend = UserVerifyEmailBackend()
