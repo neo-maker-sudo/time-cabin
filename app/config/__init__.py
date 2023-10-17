@@ -6,9 +6,9 @@ from importlib import import_module
 if not (setting_module := os.getenv("SETTING_MODULE")):
     logger = logging.getLogger("uvicorn.warn")
     logger.warn(
-        f"Could not find setting_module in global environment: {setting_module}, setdefault: app.config.staging"
+        f"Could not find setting_module in global environment: {setting_module}, setdefault: app.config.dev"
     ) 
-    setting_module = os.environ.setdefault("SETTING_MODULE", "app.config.staging")
+    setting_module = os.environ.setdefault("SETTING_MODULE", "app.config.dev")
 
 
 class ConfigSetting():

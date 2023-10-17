@@ -1,6 +1,7 @@
 from .base import *
 import sentry_sdk
 
+DOCS_URL = None
 CORS_ORIGINS: list = []
 CORS_METHODS: list = [
     "GET",

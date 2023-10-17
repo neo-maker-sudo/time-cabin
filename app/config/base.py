@@ -17,6 +17,10 @@ DATABASE_MIGRATION_MODELS: list = [
     "app.sql.models.video",
     "app.sql.models.users",
 ]
+REDIS_URL: str = os.getenv("REDIS_URL")
+EMAIL_VERIFICATION_OTP_EXPIRED_SECONDS: int = 60 * 10
+EMAIL_VERIFICATION_KEY_FORMAT_STRING: str = "emv-code-{}"
+
 VIDEO_LABEL_FIELD_VIDEO_TAG_MIN_LENGTH: int = 1
 VIDEO_LABEL_FIELD_VIDEO_TAG_MAX_LENGTH: int = 64
 VIDEO_TYPE_FIELD_MAX_LENGTH: int = 10
@@ -87,12 +91,16 @@ EMAIL_TIMEOUT: int = 5
 EMAIL_SSL_KEYFILE = None
 EMAIL_SSL_CERTFILE = None
 
+SEND_EMAIL_FROM: str = "Neo Chang 的時光小屋網站"
+SEND_EMAIL_TO: str = "使用者"
 PASSWORD_RESET_EMAIL_SUBJECT: str = '重設密碼信件'
-PASSWORD_RESET_EMAIL_FROM: str = "Neo Chang 的時光小屋網站"
-PASSWORD_RESET_EMAIL_TO: str = "使用者"
-
 PASSWORD_RESET_HTML_TEMPLATE = Template(
     Path(BASE_DIR / "app" / "templates" / "email" / "password_reset_email.html").read_text(encoding="utf-8")
+)
+USER_VERIFICATION_EMAIL_CODE_LENGTH: int = 8
+USER_VERIFICATION_EMAIL_SUBJECT: str = '信箱驗證信件'
+USER_VERIFICATION_HTML_TEMPLATE = Template(
+    Path(BASE_DIR / "app" / "templates" / "email" / "user_verification_email.html").read_text(encoding="utf-8")
 )
 
 AUTHY_APPLICATION_NAME: str = os.getenv("AUTHY_APPLICATION_NAME")

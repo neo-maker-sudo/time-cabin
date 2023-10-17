@@ -99,6 +99,20 @@ async def update_user_avatar(user_id: int, avatar_url: str):
 
 
 @atomic()
+async def update_user_email_verified(user_id: int):
+    try:
+        user = await Users.get(id=user_id)
+        user.email_verified = True
+        await user.save(update_fields=["email_verified", "modified_at"])
+
+    except DoesNotExist:
+        raise UserDoesNotExistException
+
+    except Exception as e:
+        raise e
+
+
+@atomic()
 async def update_user(user_id: int, update_object: dict):
     try:
         user = await Users.get(id=user_id)
@@ -193,10 +207,8 @@ async def update_user_video(video_id: int, user_id: int, update_object: dict):
 @atomic()
 async def delete_user_video(video_id: int, user_id: int):
     try:
-        deleted_count= await Videos.filter(id=video_id, user_id=user_id).delete()
-
-        if not deleted_count:
-            raise DoesNotExist
+        video= await Videos.get(id=video_id, user_id=user_id)
+        await video.delete()
 
     except DoesNotExist:
         raise VideoDoesNotExistException

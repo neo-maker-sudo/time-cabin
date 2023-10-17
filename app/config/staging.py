@@ -1,7 +1,7 @@
 import sentry_sdk
 from .base import *
 
-
+DOCS_URL = None
 CORS_ORIGINS: list = [
     "http://127.0.0.1:3000",
 ]
