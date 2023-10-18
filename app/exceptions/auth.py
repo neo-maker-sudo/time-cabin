@@ -28,3 +28,10 @@ class AuthyConnectionException(
     status_code=status.HTTP_417_EXPECTATION_FAILED,
     detail="網路連線錯誤，請重試",
 ): pass
+
+
+class BearerTokenInvalidException(
+    HTTPBase,
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="身份驗證錯誤或無效",
+): pass

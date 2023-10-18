@@ -14,3 +14,7 @@ CORS_METHODS: list = [
     "OPTIONS",
 ]
 TRUSTS_HOSTS = None
+
+COOKIE_HTTPONLY: bool = True
+COOKIE_SECURE: bool = True
+COOKIE_SAMESITE: bool = "none"

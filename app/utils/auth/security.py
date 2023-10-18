@@ -6,18 +6,17 @@ from datetime import datetime, timedelta
 from time import time
 from io import BytesIO
 from jose import JWTError, jwt
-from fastapi import Depends
-from fastapi.security import HTTPBearer
-from fastapi.security.http import HTTPAuthorizationCredentials
+from fastapi import Cookie
+from fastapi.security.utils import get_authorization_scheme_param
 from passlib.context import CryptContext
 import qrcode
 from qrcode.image.pure import PyPNGImage
 from app.config import setting
+from app.exceptions.auth import BearerTokenInvalidException
 from app.exceptions.general import JWTUnauthorizeException, InvalidAlgorithm
 from app.utils.general import force_bytes
 
 
-security_scheme = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -32,13 +31,28 @@ def generate_access_token(data: dict) -> str:
     exp = datetime.utcnow() + expired_delta 
     payload.update({"exp": exp})
 
-    return jwt.encode(payload, setting.JWT_SECRET_KEY, setting.JWT_ALGORITHM)
+    return (
+        setting.COOKIE_ACCESS_TOKEN_TYPE,
+        jwt.encode(payload, setting.JWT_SECRET_KEY, setting.JWT_ALGORITHM),
+        int(exp.timestamp())
+    )
 
 
-def verify_access_token(bear_token: HTTPAuthorizationCredentials = Depends(security_scheme)):
+def deconstruct_bearer_token_credentials(access_token: str) -> str:
+    scheme, token = get_authorization_scheme_param(access_token)
+
+    if scheme.lower() != setting.COOKIE_ACCESS_TOKEN_TYPE.lower():
+        raise BearerTokenInvalidException.raise_http_exception()
+
+    return token
+
+
+async def verify_access_token(tcat: str = Cookie()):
+    token = deconstruct_bearer_token_credentials(tcat)
+
     try:
         payload = jwt.decode(
-            bear_token.credentials, setting.JWT_SECRET_KEY, algorithms=[setting.JWT_ALGORITHM]
+            token, setting.JWT_SECRET_KEY, algorithms=[setting.JWT_ALGORITHM]
         )
 
     except JWTError:

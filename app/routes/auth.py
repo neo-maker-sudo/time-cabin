@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Response, status
+from app.config import setting
 from app.exceptions.auth import (
     LoginInvalidException,
     AuthyUnregisteredException,
@@ -16,7 +17,7 @@ from app.utils.auth.security import (
 from app.utils.auth.authy_client import verify_token, disable_registration, registration_status
 from app.sql.crud.auth import retrieve_user_by_email_with_authy, update_user_last_login, create_authy, delete_authy
 from app.sql.crud.users import retrieve_user_with_authy
-from app.sql.schemas.auth import LoginSchemaIn, LoginSchemaOut, AuthyVerifySchemaIn
+from app.sql.schemas.auth import LoginSchemaIn, AuthyVerifySchemaIn
 
 
 router = APIRouter(
@@ -25,7 +26,7 @@ router = APIRouter(
 )
 
 
-@router.post("/login", response_model=LoginSchemaOut, status_code=status.HTTP_200_OK)
+@router.post("/login", status_code=status.HTTP_200_OK)
 async def login_view(response: Response, schema: LoginSchemaIn):
     try:
         user = await retrieve_user_by_email_with_authy(schema.email)
@@ -41,11 +42,18 @@ async def login_view(response: Response, schema: LoginSchemaIn):
     if user.authy is not None:
         response.status_code = status.HTTP_307_TEMPORARY_REDIRECT
 
-    return {
-        "access_token": generate_access_token({"user_id": str(user.id)}),
-        "token_type": "Bearer",
-    }
+    token_type, access_token, expires = generate_access_token({'user_id': str(user.id)})
 
+    response.set_cookie(
+        key=setting.COOKIE_ACCESS_TOKEN_KEY,
+        value=f"{token_type} {access_token}",
+        expires=expires,
+        secure=setting.COOKIE_SECURE,
+        httponly=setting.COOKIE_HTTPONLY,
+        samesite=setting.COOKIE_SAMESITE,
+    )
+
+    return "OK"
 
 @router.get("/2fa/qrcode")
 async def generate_2fa_qrcode_view(
