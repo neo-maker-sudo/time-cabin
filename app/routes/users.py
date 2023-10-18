@@ -2,6 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, UploadFile, status, Query, BackgroundTasks, Request
 from fastapi_pagination import add_pagination
 from app.backgrounds.videos import process_transcoding
+from app.backgrounds.email import send_reset_password_email, send_user_verify_email
 from app.dependencies import (
     verify_avatar_extension,
     verify_video_extension,
@@ -49,7 +50,7 @@ from app.sql.schemas.videos import (
     VideoUpdateSchemaOut,
 )
 from app.utils.cloud import upload_file_to_s3
-from app.utils.email import email_backend
+from app.utils.email import user_verify_email_backend
 from app.utils.redis import set_email_verify_otp_into_redis, set_email_verify_otp_expired
 from app.utils.auth.security import hash_password, verify_access_token
 from app.utils.crypto.token import token_generator
@@ -256,7 +257,10 @@ async def change_user_password_view(
 
 
 @router.patch("/reset/password")
-async def reset_user_password_view(schema: PassowrdResetSchemaIn):
+async def reset_user_password_view(
+    background_task: BackgroundTasks,
+    schema: PassowrdResetSchemaIn,
+):
     try:
         user = await retrieve_user_by_email(schema.email)
 
@@ -265,8 +269,14 @@ async def reset_user_password_view(schema: PassowrdResetSchemaIn):
 
     # 生成 token
     token = token_generator.make_token(user)
-    # 發送信箱信件，之後可以移到獨立服務去處理
-    email_backend.send_reset_password_mail(token, user)
+
+    # 發送信箱信件
+    background_task.add_task(
+        send_reset_password_email,
+        token=token,
+        user_id=user.id,
+        email=user.email,
+    )
 
     return "OK"
 
@@ -290,6 +300,7 @@ async def reset_user_password_confirm_view(schema: PasswordResetConfirmSchemaIn)
 
 @router.get("/email-verification", status_code=status.HTTP_200_OK)
 async def send_email_verification(
+    background_task: BackgroundTasks,
     request: Request,
     user_id: int = Depends(verify_access_token)
 ):
@@ -303,7 +314,7 @@ async def send_email_verification(
     # 確認使用者是否驗證過
     if not user.email_verified:
         # 產生 OTP 驗證碼
-        code = email_backend.generate_otp_code()
+        code = user_verify_email_backend.generate_otp_code()
 
         # 存入 Redis
         await set_email_verify_otp_into_redis(
@@ -313,16 +324,15 @@ async def send_email_verification(
         )
 
         # 如果沒驗證過發送驗證信
-        email_backend.send_user_verification_mail(user, code)
+        background_task.add_task(
+            send_user_verify_email,
+            email=user.email,
+            code=code,
+        )
 
-    else:
-        return {
-            "send_mail": None
-        }
+        return {"send_mail": True}
 
-    return {
-        "send_mail": True
-    }
+    return {"send_mail": None}
 
 
 @router.patch("/email-verification", status_code=status.HTTP_200_OK)
@@ -342,5 +352,4 @@ async def send_email_verification(
         user_id=user_id,
     )
 
-    # 轉導到首頁
     return "OK"

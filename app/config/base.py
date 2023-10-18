@@ -81,7 +81,7 @@ PASSWORD_RESET_FRONT_END_ROUTE: str = "password/reset/confirm"
 
 PROJECT_OWNER_EMAIL: str = "neochang@osensetech.com"
 
-EMAIL_HOST: str = "smtp.gmail.com"
+EMAIL_HOST: str = os.getenv("EMAIL_HOST")
 EMAIL_PORT: int = 587
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
@@ -91,7 +91,7 @@ EMAIL_TIMEOUT: int = 5
 EMAIL_SSL_KEYFILE = None
 EMAIL_SSL_CERTFILE = None
 
-SEND_EMAIL_FROM: str = "Neo Chang 的時光小屋網站"
+SEND_EMAIL_FROM: str = "Noreply <noreply@time-cabin.neochang.com>"
 SEND_EMAIL_TO: str = "使用者"
 PASSWORD_RESET_EMAIL_SUBJECT: str = '重設密碼信件'
 PASSWORD_RESET_HTML_TEMPLATE = Template(
