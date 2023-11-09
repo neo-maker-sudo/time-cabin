@@ -4,6 +4,7 @@ import hashlib
 import hmac
 from datetime import datetime, timedelta
 from time import time
+from typing import Optional
 from io import BytesIO
 from jose import JWTError, jwt
 from fastapi import Cookie
@@ -20,21 +21,24 @@ from app.utils.general import force_bytes
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def generate_access_token(data: dict) -> str:
+def generate_access_token(data: dict, /, *, exp: Optional[int] = None) -> str:
     payload = data.copy()
-    try:
-        expired_delta = timedelta(days=setting.JWT_EXPIRE_DAYS)
 
-    except:
-        expired_delta = timedelta(days=2)
+    if exp is None:
+        try:
+            exp = datetime.utcnow() + timedelta(days=setting.JWT_EXPIRE_DAYS)
 
-    exp = datetime.utcnow() + expired_delta 
+        except:
+            exp = datetime.utcnow() + timedelta(days=2)
+
+        exp = int(exp.timestamp())
+
     payload.update({"exp": exp})
 
     return (
         setting.COOKIE_ACCESS_TOKEN_TYPE,
         jwt.encode(payload, setting.JWT_SECRET_KEY, setting.JWT_ALGORITHM),
-        int(exp.timestamp())
+        exp,
     )
 
 

@@ -21,11 +21,14 @@ sentry-sdk = {extras = ["fastapi"], version = "^1.29.2"}
 authy = "^2.2.6"
 qrcode = "^7.4.2"
 aioredis = "^2.0.1"
+oauthlib = "^3.2.2"
+aiohttp = "^3.8.6"
 
 
 [tool.poetry.group.dev.dependencies]
 commitizen = "^2.42.1"
 pre-commit = "^3.2.2"
+
 
 
 [tool.aerich]

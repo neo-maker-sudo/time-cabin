@@ -5,7 +5,7 @@ from .base import HTTPBase
 class LoginInvalidException(
     HTTPBase,
     status_code=status.HTTP_401_UNAUTHORIZED,    
-    detail="無效的信箱或密碼"
+    detail="無效的信箱、密碼或錯誤的登入方式"
 ): pass
 
 
@@ -34,4 +34,25 @@ class BearerTokenInvalidException(
     HTTPBase,
     status_code=status.HTTP_403_FORBIDDEN,
     detail="身份驗證錯誤或無效",
+): pass
+
+
+class OAuth2AccessTokenInvalidGrantException(
+    HTTPBase,
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="無效請求（OATIG）"
+): pass
+
+
+class OAuth2UserInfoInvalidGrantException(
+    HTTPBase,
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="無效請求（OUIIG）"
+): pass
+
+
+class OAuth2StateMismatchException(
+    HTTPBase,
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="錯誤或是無效的參數"
 ): pass

@@ -2,6 +2,7 @@ import os
 import boto3
 from string import Template
 from pathlib import Path
+from oauthlib import oauth2
 from app.enums.video import VideoDestinationFolderEnum
 
 
@@ -117,3 +118,9 @@ COOKIE_ACCESS_TOKEN_KEY: str = "tcat"
 COOKIE_HTTPONLY: bool = True
 COOKIE_SECURE: bool = True
 COOKIE_SAMESITE: str = "lax"
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_SCOPE = "openid email profile"
+GOOGLE_CALLBACK_ROUTE_NAME: str = "google_login_callback"
+GOOGLE_OAUTH_CLIENT = oauth2.WebApplicationClient(GOOGLE_CLIENT_ID)
