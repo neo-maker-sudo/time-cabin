@@ -42,3 +42,14 @@ async def set_email_verify_otp_expired(redis, /, *, user_id):
             setting.EMAIL_VERIFICATION_KEY_FORMAT_STRING.format(user_id),
             0,
         )
+
+
+async def set_oauth_token_into_redis(redis, /, *, key, value, expires):
+    async with redis.client() as conn:
+        await conn.execute_command(
+            "set",
+            key,
+            value,
+            "ex",
+            expires,
+        )

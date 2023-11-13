@@ -41,3 +41,8 @@ class AuthyVerifySchemaIn(BaseModel):
         regex=setting.AUTHY_TOKEN_REGEX,
         example="12345678",
     )
+
+
+class GoogleOauth2SchemaIn(BaseModel):
+    uri: str
+    state: str

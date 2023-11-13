@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from app.config import setting
 from app.routes import video, users, auth, mainpage

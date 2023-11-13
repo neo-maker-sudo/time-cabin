@@ -7,7 +7,9 @@ if not (setting_module := os.getenv("SETTING_MODULE")):
     logger = logging.getLogger("uvicorn.warn")
     logger.warn(
         f"Could not find setting_module in global environment: {setting_module}, setdefault: app.config.dev"
-    ) 
+    )
+    # https://stackoverflow.com/questions/27785375/testing-flask-oauthlib-locally-without-https
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     setting_module = os.environ.setdefault("SETTING_MODULE", "app.config.dev")
 
 
