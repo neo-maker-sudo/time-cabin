@@ -15,14 +15,14 @@ FROM python:3.10
 # create user, option -m means create home directory, -s means login shell
 # https://stackoverflow.com/questions/27701930/how-to-add-users-to-docker-container
 ENV PYTHONDONTWRITEBYTECODE 1
-ENV PROJECT_HOME=/home/web/m3u8
+ENV PROJECT_HOME=/home/app/code
 ENV TZ="Asia/Taipei"
 
-RUN useradd -ms /bin/bash web \
+RUN useradd -ms /bin/bash app \
     && mkdir -p $PROJECT_HOME \ 
     && mkdir -p /var/log/gunicorn/error \
     && mkdir -p /var/log/gunicorn/access \
-    && chown -R web:web /var/log/gunicorn
+    && chown -R app:app /var/log/gunicorn
 
 WORKDIR $PROJECT_HOME
 
@@ -34,7 +34,13 @@ COPY . .
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends vim supervisor \
-    && cp ./supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+    && cp ./supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-COPY ./supervisord/entrypoint.sh .
-RUN chmod +x ./supervisord/entrypoint.sh
+# adjustment linux timezone
+RUN apt update \
+    && ln -fs /usr/share/zoneinfo/Asia/Taipei /etc/localtime \
+    && dpkg-reconfigure -f noninteractive tzdata
+
+RUN chmod +x ./supervisor/entrypoint.sh
+
+ENTRYPOINT [ "/home/app/code/supervisor/entrypoint.sh" ]
