@@ -92,7 +92,7 @@ EMAIL_TIMEOUT: int = 5
 EMAIL_SSL_KEYFILE = None
 EMAIL_SSL_CERTFILE = None
 
-SEND_EMAIL_FROM: str = "Noreply <noreply@time-cabin.neochang.com>"
+SEND_EMAIL_FROM: str = "neochang1031@gmail.com"
 SEND_EMAIL_TO: str = "使用者"
 PASSWORD_RESET_EMAIL_SUBJECT: str = '重設密碼信件'
 PASSWORD_RESET_HTML_TEMPLATE = Template(

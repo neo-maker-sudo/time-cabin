@@ -4,6 +4,7 @@ from .base import *
 DOCS_URL = None
 CORS_ORIGINS: list = [
     "http://127.0.0.1:3000",
+    "https://time-cabin.neochang.com",
 ]
 CORS_METHODS: list = [
     "GET",
