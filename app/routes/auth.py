@@ -19,8 +19,9 @@ from app.utils.auth.security import (
     verify_password,
     generate_2fa_qrcode,
 )
+from app import services
+from app.repositories.database import PostgreSQLRepository
 from app.services.auth import oauth2_service
-from app.services.database import users_service
 from app.sql.crud.auth import retrieve_user_by_email_with_authy, update_user_last_login, create_authy, delete_authy
 from app.sql.crud.users import retrieve_user_with_authy
 from app.sql.schemas.auth import LoginSchemaIn, AuthyVerifySchemaIn, GoogleOauth2SchemaIn
@@ -30,7 +31,6 @@ router = APIRouter(
     prefix="/api",
     tags=["auth"]
 )
-
 
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login_view(response: Response, schema: LoginSchemaIn):
@@ -165,8 +165,8 @@ async def google_login_view(
     except (OAuth2AccessTokenInvalidGrantException, OAuth2UserInfoInvalidGrantException) as exc:
         raise exc.raise_http_exception()
 
-    user = await users_service.get_or_create(
-        "postgres",
+    user = await services.get_or_create_google_user(
+        PostgreSQLRepository(),
         object={
             "email_verified": True,
             "email": user_info.get("email"),
@@ -175,7 +175,7 @@ async def google_login_view(
         }
     )
 
-    token_type, access_token = await users_service.storage_user_info(
+    token_type, access_token = await services.storage_user_info(
         user,
         oauth_access_token=oauth_access_token,
         expires_in=expires_in,

@@ -1,25 +1,39 @@
 import uuid
 from abc import ABCMeta, abstractmethod
-from tortoise import connections
+from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
+from app.exceptions.videos import PlaylistDoesNotExistException
+from app.sql.models.video import Playlist, Videos
 
 
-class DBRepository(object, metaclass=ABCMeta):
+class AbstractDBRepository(object, metaclass=ABCMeta):
 
     @abstractmethod
     def get_or_create(self):
         raise NotImplemented
 
 
-class PostgreSQLRepository(DBRepository):
+class PostgreSQLRepository(AbstractDBRepository):
 
-    def __init__(self, conn_alias):
-        self.conn_alias =  conn_alias
+    # if error happening will rollback transaction
+    async def add_playlist_with_video(self, object: dict, playlist_name: str, connection):
+        playlist = await Playlist.create(name=playlist_name)
+
+        object.update({"playlist_id": playlist.id})
+        await Videos.create(**object, using_db=connection)
+
+    async def edit_playlist_with_video(self, object: dict, playlist_name: str, connection):
+        try:
+            playlist = await Playlist.get(name=playlist_name)
+
+        except DoesNotExist:
+            raise PlaylistDoesNotExistException
+
+        object.update({"playlist_id": playlist.id})
+        await Videos.create(**object, using_db=connection)
 
     @atomic()
-    async def get_or_create(self, model_name, object):
-        conn = connections.get(self.conn_alias)
-
+    async def get_or_create(self, model_name, object: dict, connection):
         command = f"""
         with select_data as (
             SELECT id, email, nickname, email_verified, avatar
@@ -44,7 +58,7 @@ class PostgreSQLRepository(DBRepository):
         FROM insert_data
         """
 
-        qs = await conn.execute_query_dict(command, [
+        qs = await connection.execute_query_dict(command, [
             str(uuid.uuid4()),
             object["email"],
             object["nickname"],

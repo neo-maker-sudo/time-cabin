@@ -124,3 +124,7 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_SCOPE = "openid email profile"
 GOOGLE_CALLBACK_ROUTE_NAME: str = "google_login_callback"
 GOOGLE_OAUTH_CLIENT = oauth2.WebApplicationClient(GOOGLE_CLIENT_ID)
+
+YOUTUBE_API_KEY: str = os.getenv("YOUTUBE_API_KEY")
+YOUTUBE_SEARCH_URL: str = f"https://www.googleapis.com/youtube/v3/search"
+YOUTUBE_GET_VIDEO_URL: str = f"https://www.googleapis.com/youtube/v3/videos"

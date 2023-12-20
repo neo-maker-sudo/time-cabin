@@ -9,3 +9,8 @@ class TimeZoneEnum(str, Enum):
 class ChangedPasswordLengthEnum(int, Enum):
     PasswordMinLength = 8
     PasswordMaxLength = 12
+
+
+class SearchServiceActionEnums(str, Enum):
+    SEARCH = "search"
+    GET = "get"

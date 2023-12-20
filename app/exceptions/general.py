@@ -32,7 +32,7 @@ class AWSParamValidationException(
 
 
 class ConvertDatetimeFormatException(Exception):
-    error_message: str = "datetime arugment type error or tzinfo not UTC"
+    error_message: str = "datetime argument type error or tzinfo not UTC"
 
     def __str__(self):
         return self.error_message

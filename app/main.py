@@ -6,7 +6,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from app.config import setting
-from app.routes import video, users, auth, mainpage
+from app.routes import video, users, auth, mainpage, search
 from app.utils.general import create_videos_folder
 from app.utils.redis import connect_redis
 
@@ -28,6 +28,7 @@ app.include_router(video.router)
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(mainpage.router)
+app.include_router(search.router)
 
 register_tortoise(
     app,

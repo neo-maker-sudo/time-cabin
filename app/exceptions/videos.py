@@ -21,3 +21,10 @@ class VideoDoesNotExistException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail="影片不存在",
 ): pass
+
+
+class PlaylistDoesNotExistException(
+    HTTPBase,
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="影片清單不存在",
+): pass
